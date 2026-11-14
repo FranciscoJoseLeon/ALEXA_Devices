@@ -20,7 +20,6 @@ class alexa_devices extends eqLogic {
         $return['log'] = 'alexa_devices_daemon';
         $return['state'] = 'nok';
 
-        $port = config::byKey('daemon_port', 'alexa_devices', 55065);
         $pid_file = jeedom::getTmpFolder('alexa_devices') . '/daemon.pid';
 
         if (file_exists($pid_file)) {
@@ -28,7 +27,25 @@ class alexa_devices extends eqLogic {
             if ($pid > 0 && posix_kill($pid, 0)) {
                 $return['state'] = 'ok';
             } else {
-                unlink($pid_file);
+                try {
+                    $health = self::callDaemon('/api/health', array(), 'GET');
+                    if (isset($health['status']) && $health['status'] == 'ok') {
+                        $return['state'] = 'ok';
+                    } else {
+                        unlink($pid_file);
+                    }
+                } catch (Exception $e) {
+                    unlink($pid_file);
+                }
+            }
+        } else {
+            try {
+                $health = self::callDaemon('/api/health', array(), 'GET');
+                if (isset($health['status']) && $health['status'] == 'ok') {
+                    $return['state'] = 'ok';
+                }
+            } catch (Exception $e) {
+                // Demonio inactivo
             }
         }
 
@@ -126,6 +143,15 @@ class alexa_devices extends eqLogic {
             }
             unlink($pid_file);
         }
+
+        // Asegurar que no quede ningún proceso huérfano bloqueando el puerto
+        $port = config::byKey('daemon_port', 'alexa_devices', 55065);
+        if (function_exists('exec')) {
+            $sudo = (class_exists('system') && method_exists('system', 'getCmdSudo')) ? system::getCmdSudo() : 'sudo ';
+            exec($sudo . 'fuser -k ' . intval($port) . '/tcp 2>/dev/null');
+            exec($sudo . 'pkill -f "alexa_devices_daemon.py" 2>/dev/null');
+        }
+
         log::add('alexa_devices', 'info', 'Alexa Devices daemon stopped.');
     }
 
