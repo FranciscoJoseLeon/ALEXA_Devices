@@ -1,0 +1,45 @@
+<div class="eqLogic eqLogic-widget alexa-widget #custom_layout# #eqLogic_class#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: 100%;#style#">
+    <center class="widget-name">
+        <span class="reportModeVisible">#name_display#</span>
+        <a href="#eqLogic_href#" class="reportModeHidden">#name_display#</a>
+    </center>
+
+    <div class="alexa-card-content">
+        <div class="alexa-header-row">
+            <div class="alexa-status-badge">#status_display#</div>
+            <div class="alexa-dnd-toggle">#dnd_display#</div>
+        </div>
+
+        <div class="alexa-media-section">
+            <div class="alexa-media-info">
+                <i class="fas fa-music"></i> <span class="alexa-media-state">#media_state#</span>
+            </div>
+            <div class="alexa-media-controls">
+                <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-alexa" data-cmd_id="#previous_id#">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button type="button" class="btn btn-primary btn-circle cmd-btn-alexa" data-cmd_id="#play_id#">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button type="button" class="btn btn-default btn-circle cmd-btn-alexa" data-cmd_id="#pause_id#">
+                    <i class="fas fa-pause"></i>
+                </button>
+                <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-alexa" data-cmd_id="#next_id#">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="alexa-volume-row">
+            <i class="fas fa-volume-down"></i>
+            <input type="range" class="alexa-vol-slider" min="0" max="100" value="#volume#" data-cmd_id="#set_volume_id#" />
+            <i class="fas fa-volume-up"></i>
+            <span class="alexa-vol-val">#volume#%</span>
+        </div>
+
+        <div class="alexa-last-cmd-bubble">
+            <i class="fas fa-comment-dots" style="color: #00CAFA;"></i>
+            <span>#last_command#</span>
+        </div>
+    </div>
+</div>

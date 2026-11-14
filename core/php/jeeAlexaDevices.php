@@ -1,0 +1,103 @@
+<?php
+/* This file is part of Jeedom.
+ *
+ * Jeedom is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
+require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
+
+header('Content-Type: application/json');
+
+$raw = file_get_contents('php://input');
+if (empty($raw)) {
+    http_response_code(400);
+    echo json_encode(array('error' => 'No input'));
+    exit;
+}
+
+$data = json_decode($raw, true);
+if (!is_array($data)) {
+    http_response_code(400);
+    echo json_encode(array('error' => 'Invalid JSON'));
+    exit;
+}
+
+$expectedToken = config::byKey('daemon_token', 'alexa_devices');
+if (!empty($expectedToken) && (!isset($data['token']) || $data['token'] !== $expectedToken)) {
+    http_response_code(403);
+    echo json_encode(array('error' => 'Invalid token'));
+    exit;
+}
+
+$eventType = isset($data['event_type']) ? $data['event_type'] : '';
+$payload = isset($data['payload']) ? $data['payload'] : array();
+
+log::add('alexa_devices', 'debug', "Webhook recibido: {$eventType}");
+
+switch ($eventType) {
+    case 'devices_list':
+        if (is_array($payload)) {
+            foreach ($payload as $device) {
+                alexa_devices::createOrUpdateDevice($device);
+            }
+        }
+        break;
+
+    case 'volume_state':
+        if (is_array($payload)) {
+            foreach ($payload as $serial => $info) {
+                $eqLogic = alexa_devices::byLogicalId($serial, 'alexa_devices');
+                if (is_object($eqLogic) && isset($info['volume'])) {
+                    $eqLogic->checkAndUpdateCmd('volume', $info['volume']);
+                }
+            }
+        }
+        break;
+
+    case 'media_state':
+        if (is_array($payload)) {
+            foreach ($payload as $serial => $info) {
+                $eqLogic = alexa_devices::byLogicalId($serial, 'alexa_devices');
+                if (is_object($eqLogic) && isset($info['state'])) {
+                    $eqLogic->checkAndUpdateCmd('media_state', $info['state']);
+                }
+            }
+        }
+        break;
+
+    case 'dnd_state':
+        if (is_array($payload)) {
+            foreach ($payload as $serial => $enabled) {
+                $eqLogic = alexa_devices::byLogicalId($serial, 'alexa_devices');
+                if (is_object($eqLogic)) {
+                    $eqLogic->checkAndUpdateCmd('dnd_status', $enabled ? 1 : 0);
+                }
+            }
+        }
+        break;
+
+    case 'history_state':
+        if (is_array($payload)) {
+            foreach ($payload as $serial => $rec) {
+                $eqLogic = alexa_devices::byLogicalId($serial, 'alexa_devices');
+                if (is_object($eqLogic) && !empty($rec['description'])) {
+                    $eqLogic->checkAndUpdateCmd('last_command', $rec['description']);
+                }
+            }
+        }
+        break;
+
+    case 'auth_required':
+        message::add('alexa_devices', 'La sesión con Amazon ha caducado. Por favor, vuelve a iniciar sesión en la configuración del plugin.');
+        break;
+
+    case 'reinstall_dependencies_needed':
+        $reason = isset($payload['reason']) ? ' (' . $payload['reason'] . ')' : '';
+        message::add('alexa_devices', 'Amazon ha actualizado sus servicios' . $reason . '. Por favor, reinstala las dependencias del plugin Alexa Devices desde Plugins > Gestión de plugins > Alexa Devices.');
+        break;
+}
+
+echo json_encode(array('status' => 'ok'));

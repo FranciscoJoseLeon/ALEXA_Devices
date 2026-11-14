@@ -1,0 +1,23 @@
+{
+  "id": "alexa_devices",
+  "name": "Alexa Devices",
+  "description": "Port de la integración alexa_devices de Home Assistant para Jeedom basada en la librería aioamazondevices. Soporta dispositivos Amazon Echo, reproducción TTS, anuncios, comandos de voz por texto, control de volumen, modos No Molestar, estado multimedia y sensores en tiempo real vía HTTP/2.",
+  "category": "multimedia",
+  "author": "Antigravity & Community",
+  "licence": "GPL",
+  "version": "1.0.0",
+  "require": "4.2.0",
+  "hasDependency": true,
+  "hasOwnDeamon": true,
+  "maxDependancyInstallTime": 25,
+  "changelog": "https://github.com/",
+  "documentation": "https://github.com/",
+  "compatibility": [
+    "miniplus",
+    "smart",
+    "rpi",
+    "docker",
+    "diy",
+    "v4"
+  ]
+}

@@ -1,0 +1,207 @@
+<div class="eqLogic eqLogic-widget alexa-widget #custom_layout# #eqLogic_class#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;#style#">
+    <center class="widget-name">
+        <span class="warning" title="#alert_name#">
+            <i class='#alert_icon#'></i>
+        </span>
+        <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
+            <i class="fas fa-sync"></i>
+        </span>
+        <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
+        <a href="#eqLogic_href#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
+    </center>
+
+    <div class="alexa-card-content">
+        <!-- CABECERA CON ESTADO Y DND -->
+        <div class="alexa-header-row">
+            <div class="alexa-status-badge">
+                #status_display#
+            </div>
+            <div class="alexa-dnd-toggle">
+                #dnd_display#
+            </div>
+        </div>
+
+        <!-- REPRODUCTOR MULTIMEDIA -->
+        <div class="alexa-media-section">
+            <div class="alexa-media-info">
+                <i class="fas fa-music alexa-music-icon"></i>
+                <span class="alexa-media-state">#media_state#</span>
+            </div>
+            <div class="alexa-media-controls">
+                <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-alexa" data-cmd_id="#previous_id#" title="{{Anterior}}">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button type="button" class="btn btn-primary btn-circle cmd-btn-alexa" data-cmd_id="#play_id#" title="{{Reproducir}}">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button type="button" class="btn btn-default btn-circle cmd-btn-alexa" data-cmd_id="#pause_id#" title="{{Pausar}}">
+                    <i class="fas fa-pause"></i>
+                </button>
+                <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-alexa" data-cmd_id="#next_id#" title="{{Siguiente}}">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- CONTROL DE VOLUMEN -->
+        <div class="alexa-volume-row">
+            <i class="fas fa-volume-down alexa-vol-icon"></i>
+            <input type="range" class="alexa-vol-slider" min="0" max="100" value="#volume#" data-cmd_id="#set_volume_id#" />
+            <i class="fas fa-volume-up alexa-vol-icon"></i>
+            <span class="alexa-vol-val">#volume#%</span>
+        </div>
+
+        <!-- ÚLTIMO COMANDO VOCAL ESCUCHADO -->
+        <div class="alexa-last-cmd-bubble" title="{{Última orden escuchada por Alexa}}">
+            <i class="fas fa-comment-dots" style="color: #00CAFA; margin-right: 4px;"></i>
+            <span class="alexa-last-cmd-text">#last_command#</span>
+        </div>
+
+        <!-- ENVIAR ORDEN RÁPIDA O TTS -->
+        <div class="alexa-quick-action-row">
+            <div class="input-group input-group-sm">
+                <input type="text" class="form-control alexa-input-text" placeholder="{{Comando o hablar...}}" />
+                <div class="input-group-btn">
+                    <button class="btn btn-info alexa-btn-send-cmd" data-cmd_id="#text_command_id#" title="{{Ejecutar como orden vocal}}">
+                        <i class="fas fa-terminal"></i>
+                    </button>
+                    <button class="btn btn-default alexa-btn-send-speak" data-cmd_id="#speak_id#" title="{{Hacer hablar (TTS)}}">
+                        <i class="fas fa-comment-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESTILOS Y COMPORTAMIENTO DEL WIDGET -->
+    <style>
+        .alexa-widget {
+            background: linear-gradient(145deg, rgba(35, 47, 62, 0.95), rgba(20, 28, 38, 0.98)) !important;
+            border-radius: 12px !important;
+            border-top: 3px solid #00CAFA !important;
+            color: #E6E6E6 !important;
+            padding: 8px 12px !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+        }
+        .alexa-card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        .alexa-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .alexa-media-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 6px;
+            text-align: center;
+        }
+        .alexa-media-info {
+            font-size: 11px;
+            margin-bottom: 5px;
+            color: #99B2C6;
+        }
+        .alexa-media-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .cmd-btn-alexa {
+            border-radius: 50% !important;
+            width: 32px;
+            height: 32px;
+            padding: 0 !important;
+            line-height: 32px !important;
+        }
+        .cmd-btn-alexa.btn-primary {
+            background-color: #00CAFA !important;
+            border-color: #00CAFA !important;
+            color: #111 !important;
+            width: 36px;
+            height: 36px;
+            line-height: 36px !important;
+        }
+        .alexa-volume-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+        .alexa-vol-slider {
+            flex-grow: 1;
+            height: 4px;
+            accent-color: #00CAFA;
+            cursor: pointer;
+        }
+        .alexa-vol-val {
+            min-width: 34px;
+            text-align: right;
+            font-weight: bold;
+            color: #00CAFA;
+        }
+        .alexa-last-cmd-bubble {
+            background: rgba(0, 202, 250, 0.1);
+            border-left: 2px solid #00CAFA;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #BBEAFB;
+        }
+        .alexa-quick-action-row .form-control {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #FFF !important;
+            border-radius: 4px 0 0 4px !important;
+        }
+    </style>
+
+    <script>
+        // Manejador de botones multimedia
+        $('.alexa-widget[data-eqLogic_id=#id#] .cmd-btn-alexa').off('click').on('click', function() {
+            var cmdId = $(this).attr('data-cmd_id');
+            if (cmdId) {
+                jeedom.cmd.execute({id: cmdId});
+            }
+        });
+
+        // Manejador del slider de volumen
+        $('.alexa-widget[data-eqLogic_id=#id#] .alexa-vol-slider').off('change').on('change', function() {
+            var cmdId = $(this).attr('data-cmd_id');
+            var val = $(this).val();
+            $(this).siblings('.alexa-vol-val').text(val + '%');
+            if (cmdId) {
+                jeedom.cmd.execute({id: cmdId, value: {slider: val}});
+            }
+        });
+
+        // Envío de comando por texto
+        $('.alexa-widget[data-eqLogic_id=#id#] .alexa-btn-send-cmd').off('click').on('click', function() {
+            var input = $(this).closest('.alexa-quick-action-row').find('.alexa-input-text');
+            var text = input.val().trim();
+            var cmdId = $(this).attr('data-cmd_id');
+            if (text && cmdId) {
+                jeedom.cmd.execute({id: cmdId, value: {message: text}});
+                input.val('');
+            }
+        });
+
+        // Envío de TTS Hablar
+        $('.alexa-widget[data-eqLogic_id=#id#] .alexa-btn-send-speak').off('click').on('click', function() {
+            var input = $(this).closest('.alexa-quick-action-row').find('.alexa-input-text');
+            var text = input.val().trim();
+            var cmdId = $(this).attr('data-cmd_id');
+            if (text && cmdId) {
+                jeedom.cmd.execute({id: cmdId, value: {message: text}});
+                input.val('');
+            }
+        });
+    </script>
+</div>
