@@ -8,7 +8,7 @@
  */
 
 if (!isConnect('admin')) {
-    throw new Exception('{{401 - Acceso no autorizado}}');
+    throw new Exception('{{401 - Unauthorized access}}');
 }
 
 $plugin = plugin::byId('alexa_devices');
@@ -17,12 +17,12 @@ $eqLogics = eqLogic::byType($plugin->getId());
 ?>
 
 <div class="row row-overflow">
-    <!-- PANEL LATERAL / LISTA DE DISPOSITIVOS -->
+    <!-- SIDEBAR / DEVICE LIST -->
     <div class="col-xs-12 col-md-3 col-lg-2">
         <div class="bs-sidebar">
             <ul id="ul_eqLogic" class="nav nav-list bs-sidenav">
                 <li class="filter" style="margin-bottom: 5px;">
-                    <input class="filter form-control input-sm" placeholder="{{Buscar...}}" style="width: 100%"/>
+                    <input class="filter form-control input-sm" placeholder="{{Search...}}" style="width: 100%"/>
                 </li>
                 <?php
                 foreach ($eqLogics as $eqLogic) {
@@ -36,25 +36,25 @@ $eqLogics = eqLogic::byType($plugin->getId());
         </div>
     </div>
 
-    <!-- PANEL PRINCIPAL -->
+    <!-- MAIN PANEL -->
     <div class="col-xs-12 col-md-9 col-lg-10 eqLogicThumbnailDisplay" style="border-left: solid 1px #EEE; padding-left: 25px;">
-        <legend><i class="fas fa-cog"></i> {{Gestión de Alexa Devices}}</legend>
+        <legend><i class="fas fa-cog"></i> {{Alexa Devices Management}}</legend>
         <div class="eqLogicThumbnailContainer">
             <div class="cursor eqLogicAction logoPrimary" id="bt_syncAlexaDevices">
                 <i class="fas fa-sync"></i>
                 <br>
-                <span>{{Sincronizar Dispositivos}}</span>
+                <span>{{Synchronize Devices}}</span>
             </div>
             <div class="cursor eqLogicAction logoSecondary" onclick="window.location.href = 'index.php?v=d&p=plugin&id=alexa_devices';">
                 <i class="fas fa-wrench"></i>
                 <br>
-                <span>{{Configuración}}</span>
+                <span>{{Configuration}}</span>
             </div>
         </div>
 
-        <legend><i class="fas fa-volume-up"></i> {{Mis Dispositivos Echo y Alexa}}</legend>
+        <legend><i class="fas fa-volume-up"></i> {{My Echo & Alexa Devices}}</legend>
         <div class="input-group" style="margin-bottom:5px;">
-            <input class="form-control roundedLeft" placeholder="{{Filtrar dispositivos...}}" id="in_searchEqlogic"/>
+            <input class="form-control roundedLeft" placeholder="{{Filter devices...}}" id="in_searchEqlogic"/>
             <div class="input-group-btn">
                 <a id="bt_resetSearch" class="btn" style="width:30px"><i class="fas fa-times"></i></a>
             </div>
@@ -66,7 +66,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 $opacity = ($eqLogic->getIsEnable()) ? '' : 'disableCard';
                 $online = $eqLogic->getCmd(null, 'status');
                 $isOnline = (is_object($online) && $online->execCmd() == 1);
-                $badge = $isOnline ? '<span class="label label-success">{{En línea}}</span>' : '<span class="label label-danger">{{Desconectado}}</span>';
+                $badge = $isOnline ? '<span class="label label-success">{{Online}}</span>' : '<span class="label label-danger">{{Offline}}</span>';
 
                 $vol = $eqLogic->getCmd(null, 'volume');
                 $volText = (is_object($vol)) ? '<span class="label label-info" style="font-size:9px;"><i class="fas fa-volume-up"></i> ' . intval($vol->execCmd()) . '%</span>' : '';
@@ -93,17 +93,17 @@ $eqLogics = eqLogic::byType($plugin->getId());
         </div>
     </div>
 
-    <!-- PANEL DE EDICIÓN DEL DISPOSITIVO -->
+    <!-- DEVICE EDIT PANEL -->
     <div class="col-xs-12 col-md-9 col-lg-10 eqLogic" style="border-left: solid 1px #EEE; padding-left: 25px; display: none;">
-        <a class="btn btn-default eqLogicAction pull-right" data-action="configure"><i class="fas fa-cogs"></i> {{Configuración avanzada}}</a>
-        <a class="btn btn-default eqLogicAction pull-right" data-action="copy"><i class="fas fa-copy"></i> {{Duplicar}}</a>
-        <a class="btn btn-sm btn-success eqLogicAction pull-right" data-action="save"><i class="fas fa-check-circle"></i> {{Guardar}}</a>
-        <a class="btn btn-danger eqLogicAction pull-right" data-action="remove"><i class="fas fa-minus-circle"></i> {{Eliminar}}</a>
+        <a class="btn btn-default eqLogicAction pull-right" data-action="configure"><i class="fas fa-cogs"></i> {{Advanced Configuration}}</a>
+        <a class="btn btn-default eqLogicAction pull-right" data-action="copy"><i class="fas fa-copy"></i> {{Duplicate}}</a>
+        <a class="btn btn-sm btn-success eqLogicAction pull-right" data-action="save"><i class="fas fa-check-circle"></i> {{Save}}</a>
+        <a class="btn btn-danger eqLogicAction pull-right" data-action="remove"><i class="fas fa-minus-circle"></i> {{Delete}}</a>
 
         <ul class="nav nav-tabs" role="tablist">
             <li role="presentation"><a href="#" class="eqLogicAction" aria-controls="home" role="tab" data-toggle="tab" data-action="returnToThumbnailDisplay"><i class="fas fa-arrow-circle-left"></i></a></li>
-            <li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Dispositivo}}</a></li>
-            <li role="presentation"><a href="#commandtab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fas fa-list-alt"></i> {{Comandos}}</a></li>
+            <li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Device}}</a></li>
+            <li role="presentation"><a href="#commandtab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fas fa-list-alt"></i> {{Commands}}</a></li>
         </ul>
 
         <div class="tab-content" style="height:calc(100% - 50px); overflow:auto; overflow-x: hidden;">
@@ -112,18 +112,18 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 <form class="form-horizontal">
                     <fieldset>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">{{Nombre del Dispositivo}}</label>
+                            <label class="col-sm-3 control-label">{{Device Name}}</label>
                             <div class="col-sm-4">
                                 <input type="text" class="eqLogicAttr form-control" data-l1key="id" style="display : none;" />
-                                <input type="text" class="eqLogicAttr form-control" data-l1key="name" placeholder="{{Nombre del Echo}}" />
+                                <input type="text" class="eqLogicAttr form-control" data-l1key="name" placeholder="{{Echo Name}}" />
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">{{Objeto Padre}}</label>
+                            <label class="col-sm-3 control-label">{{Parent Object}}</label>
                             <div class="col-sm-4">
                                 <select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
-                                    <option value="">{{Ninguno}}</option>
+                                    <option value="">{{None}}</option>
                                     <?php
                                     $options = '';
                                     foreach ((jeeObject::buildTree(null, false)) as $object) {
@@ -136,7 +136,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                         </div>
 
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">{{Categoría}}</label>
+                            <label class="col-sm-3 control-label">{{Category}}</label>
                             <div class="col-sm-8">
                                 <?php
                                 foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) {
@@ -149,36 +149,36 @@ $eqLogics = eqLogic::byType($plugin->getId());
                         </div>
 
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">{{Estado}}</label>
+                            <label class="col-sm-3 control-label">{{State}}</label>
                             <div class="col-sm-9">
-                                <label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isEnable" checked/>{{Activar}}</label>
+                                <label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isEnable" checked/>{{Enable}}</label>
                                 <label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isVisible" checked/>{{Visible}}</label>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">{{Número de Serie (Logical ID)}}</label>
+                            <label class="col-sm-3 control-label">{{Serial Number (Logical ID)}}</label>
                             <div class="col-sm-4">
                                 <input type="text" class="eqLogicAttr form-control" data-l1key="logicalId" readonly />
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">{{Familia de Dispositivo}}</label>
+                            <label class="col-sm-3 control-label">{{Device Family}}</label>
                             <div class="col-sm-4">
                                 <input type="text" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="device_family" readonly />
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">{{Tipo de Dispositivo}}</label>
+                            <label class="col-sm-3 control-label">{{Device Type}}</label>
                             <div class="col-sm-4">
                                 <input type="text" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="device_type" readonly />
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">{{Versión de Software}}</label>
+                            <label class="col-sm-3 control-label">{{Software Version}}</label>
                             <div class="col-sm-4">
                                 <input type="text" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="software_version" readonly />
                             </div>
@@ -192,11 +192,11 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 <table id="table_cmd" class="table table-bordered table-condensed">
                     <thead>
                         <tr>
-                            <th style="width: 250px;">{{Nombre}}</th>
-                            <th style="width: 150px;">{{Tipo}}</th>
-                            <th style="width: 200px;">{{Parámetros}}</th>
-                            <th style="width: 150px;">{{Opciones}}</th>
-                            <th style="width: 100px;">{{Acción}}</th>
+                            <th style="width: 250px;">{{Name}}</th>
+                            <th style="width: 150px;">{{Type}}</th>
+                            <th style="width: 200px;">{{Parameters}}</th>
+                            <th style="width: 150px;">{{Options}}</th>
+                            <th style="width: 100px;">{{Action}}</th>
                         </tr>
                     </thead>
                     <tbody>

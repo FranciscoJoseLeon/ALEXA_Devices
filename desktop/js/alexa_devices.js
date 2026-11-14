@@ -25,7 +25,7 @@ $('#bt_syncAlexaDevices').on('click', function () {
                 $('#div_alert').showAlert({message: data.result, level: 'danger'});
                 return;
             }
-            $('#div_alert').showAlert({message: '{{Dispositivos sincronizados con éxito}}', level: 'success'});
+            $('#div_alert').showAlert({message: '{{Devices synchronized successfully}}', level: 'success'});
             window.location.reload();
         }
     });
@@ -58,7 +58,7 @@ function addCmdToTable(_cmd) {
     var tr = '<tr class="cmd" data-cmd_id="' + init(_cmd.id) + '">';
     tr += '<td>';
     tr += '<span class="cmdAttr" data-l1key="id" style="display:none;"></span>';
-    tr += '<input class="cmdAttr form-control input-sm" data-l1key="name" placeholder="{{Nombre}}">';
+    tr += '<input class="cmdAttr form-control input-sm" data-l1key="name" placeholder="{{Name}}">';
     tr += '<span class="label label-info cmdAttr" data-l1key="logicalId"></span>';
     tr += '</td>';
 
@@ -75,12 +75,12 @@ function addCmdToTable(_cmd) {
 
     tr += '<td>';
     tr += '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-l1key="isVisible" checked/>{{Visible}}</label> ';
-    tr += '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-l1key="isHistorized"/>{{Historial}}</label>';
+    tr += '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-l1key="isHistorized"/>{{History}}</label>';
     tr += '</td>';
 
     tr += '<td>';
     if (is_numeric(_cmd.id)) {
-        tr += '<a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fas fa-rss"></i> {{Probar}}</a> ';
+        tr += '<a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fas fa-rss"></i> {{Test}}</a> ';
         tr += '<a class="btn btn-default btn-xs cmdAction" data-action="configure"><i class="fas fa-cogs"></i></a>';
     }
     tr += '</td>';

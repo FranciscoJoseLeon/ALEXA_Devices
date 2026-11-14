@@ -12,7 +12,7 @@ try {
     include_file('core', 'authentification', 'php');
 
     if (!isConnect('admin')) {
-        throw new Exception(__('401 - Acceso no autorizado', __FILE__));
+        throw new Exception(__('401 - Unauthorized access', __FILE__));
     }
 
     $action = init('action');
@@ -33,7 +33,7 @@ try {
         $domain = init('domain', 'es');
 
         if (empty($username) || empty($password) || empty($code)) {
-            throw new Exception(__('Debes proporcionar usuario, contraseña y código OTP.', __FILE__));
+            throw new Exception(__('You must provide username, password, and OTP code.', __FILE__));
         }
 
         $domainUrls = array(
@@ -78,7 +78,7 @@ try {
         }
     }
 
-    throw new Exception(__('Ninguna acción válida proporcionada.', __FILE__));
+    throw new Exception(__('No valid action provided.', __FILE__));
 
 } catch (Exception $e) {
     ajax::error(displayException($e), $e->getCode());

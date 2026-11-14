@@ -91,12 +91,12 @@ switch ($eventType) {
         break;
 
     case 'auth_required':
-        message::add('alexa_devices', 'La sesión con Amazon ha caducado. Por favor, vuelve a iniciar sesión en la configuración del plugin.');
+        message::add('alexa_devices', __('Amazon session has expired. Please log in again in the plugin configuration.', __FILE__));
         break;
 
     case 'reinstall_dependencies_needed':
         $reason = isset($payload['reason']) ? ' (' . $payload['reason'] . ')' : '';
-        message::add('alexa_devices', 'Amazon ha actualizado sus servicios' . $reason . '. Por favor, reinstala las dependencias del plugin Alexa Devices desde Plugins > Gestión de plugins > Alexa Devices.');
+        message::add('alexa_devices', __('Amazon has updated its services', __FILE__) . $reason . '. ' . __('Please reinstall plugin dependencies from Plugins > Plugin management > Alexa Devices.', __FILE__));
         break;
 }
 

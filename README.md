@@ -1,8 +1,8 @@
 # Plugin Alexa Devices para Jeedom
 
-Port directo y completo del componente oficial **`alexa_devices`** de **Home Assistant** ([homeassistant/components/alexa_devices](https://github.com/home-assistant/core/tree/dev/homeassistant/components/alexa_devices)) adaptado a la arquitectura de **Jeedom v4 / v4.4+**.
+Integración nativa y completa para dispositivos **Amazon Echo y Alexa** adaptada a la arquitectura de **Jeedom v4 / v4.4+**.
 
-Este plugin utiliza la librería asíncrona moderna [`aioamazondevices`](https://github.com/chemelli74/aioamazondevices), la misma empleada por Home Assistant, garantizando compatibilidad con el protocolo push oficial **HTTP/2 de Amazon AVS**.
+Este plugin utiliza la librería asíncrona moderna [`aioamazondevices`](https://github.com/chemelli74/aioamazondevices), garantizando compatibilidad con el protocolo push oficial **HTTP/2 de Amazon AVS**.
 
 ---
 
@@ -22,7 +22,7 @@ Este plugin utiliza la librería asíncrona moderna [`aioamazondevices`](https:/
 
 ---
 
-## 🏛️ Arquitectura del Port
+## 🏛️ Arquitectura del Plugin
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -49,7 +49,7 @@ Este plugin utiliza la librería asíncrona moderna [`aioamazondevices`](https:/
 └─────────────────────────────────────────────────────────────┘
 ```
 
-1. **Demonio en Python 3**: Dado que `aioamazondevices` es una librería asíncrona de Python (`asyncio`), el plugin ejecuta un demonio en segundo plano dentro de un entorno virtual aislado (`demond/venv`).
+1. **Demonio en Python 3**: El plugin ejecuta un servicio en segundo plano dentro de un entorno virtual aislado (`demond/venv`) con `aioamazondevices`.
 2. **Comunicación Local**:
    - Cuando Jeedom envía una orden (ej. *TTS*, *Volumen* o *Pausa*), la clase PHP hace una petición `POST` al demonio en `http://127.0.0.1:55065/api/command`.
    - Cuando Amazon envía un evento por el stream HTTP/2 (ej. alguien cambió el volumen físicamente o habló al Echo), el demonio llama al webhook de Jeedom (`core/php/jeeAlexaDevices.php`) con un token de seguridad para refrescar los comandos de forma inmediata.
@@ -65,8 +65,15 @@ alexa_devices/
 │   │   └── alexa_devices.ajax.php        # Controlador AJAX (login, sync, health)
 │   ├── class/
 │   │   └── alexa_devices.class.php       # Clases eqLogic y cmd de Jeedom
-│   └── php/
-│       └── jeeAlexaDevices.php           # Webhook receptor de eventos push del demonio
+│   ├── i18n/
+│   │   ├── en_US.json                    # Diccionario oficial en inglés
+│   │   ├── es_ES.json                    # Diccionario oficial en español
+│   │   └── fr_FR.json                    # Diccionario oficial en francés
+│   ├── php/
+│   │   └── jeeAlexaDevices.php           # Webhook receptor de eventos push del demonio
+│   └── template/
+│       ├── dashboard/                    # Widget interactivo para Dashboard
+│       └── mobile/                       # Widget optimizado para móvil
 ├── desktop/
 │   ├── css/
 │   │   └── alexa_devices.css             # Estilos de tarjetas de equipos
@@ -76,8 +83,9 @@ alexa_devices/
 │   │   └── login.modal.php               # Modal de inicio de sesión con soporte 2FA OTP
 │   └── php/
 │       └── alexa_devices.php             # Pantalla de gestión de dispositivos
+├── docs/                                 # Documentación multilingüe oficial (en_US, fr_FR, es_ES)
 ├── plugin_info/
-│   ├── alexa_devices_icon.png            # Icono del plugin
+│   ├── alexa_devices_icon.png            # Icono del plugin para Jeedom
 │   ├── configuration.php                 # Página de configuración del plugin
 │   ├── info.json                         # Metadatos del plugin Jeedom
 │   └── install.php                       # Hooks de instalación / desinstalación
@@ -93,22 +101,7 @@ alexa_devices/
 
 ---
 
-## 🔔 Sistema de Notificaciones y Mantenimiento
-
-Este plugin cuenta con un sistema de separación de alertas entre el desarrollador y el usuario final:
-
-### 1. Para ti (Desarrollador): Alertas de cambios en Home Assistant
-- Los usuarios finales **no ven** nada sobre Home Assistant.
-- El flujo [`.github/workflows/sync_upstream.yml`](.github/workflows/sync_upstream.yml) analiza los cambios en el componente `alexa_devices` de Home Assistant Core.
-- Cuando hay una nueva versión de la librería `aioamazondevices` o commits en Home Assistant, GitHub crea automáticamente un **Issue privado en tu repositorio asignado a ti**, enviándote una notificación push/email con el informe de cambios y preparando un Pull Request.
-
-### 2. Para el Usuario Final de Jeedom: Reinstalación de Dependencias
-- Si Amazon actualiza sus servidores o protocolos de autenticación y la versión de la librería queda desfasada:
-  1. **Detección Automática**: `dependancy_info()` en `alexa_devices.class.php` compara la versión instalada en el venv contra la versión requerida.
-  2. **Aviso en Jeedom**: Jeedom marca las dependencias como `nok`, mostrando el aviso al usuario para que pulse en **Reinstalar**.
-  3. **Centro de Mensajes de Jeedom**: Si el demonio detecta un fallo de protocolo de Amazon, envía una notificación al centro de mensajes de Jeedom pidiéndole al usuario que reinstale las dependencias desde el panel del plugin para actualizar los componentes de Amazon.
-
----
+## 🛠️ Instalación y Configuración
 
 ### 1. Despliegue en Jeedom
 Copia o clona este repositorio dentro del directorio de plugins de Jeedom:
@@ -132,4 +125,4 @@ chown -R www-data:www-data alexa_devices
 ### 4. Sincronización de Dispositivos
 1. Dirígete a **Plugins > Multimedia > Alexa Devices**.
 2. Haz clic en **Sincronizar Dispositivos**.
-3. Todos tus altavoces y pantallas Echo aparecerán listados con sus mandos, volumen, sensores y controles interactivos listos para usar en tus escenarios.
+3. Todos tus altavoces y pantallas Echo aparecerán listados con sus mandos, volumen, sensores y controles interactivos listos para usar en tus escenarios y en el Dashboard.

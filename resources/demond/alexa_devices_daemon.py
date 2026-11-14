@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Alexa Devices Daemon for Jeedom
-Port of Home Assistant's alexa_devices component using aioamazondevices.
+Async daemon powered by aioamazondevices and HTTP/2 AVS push.
 """
 
 import argparse

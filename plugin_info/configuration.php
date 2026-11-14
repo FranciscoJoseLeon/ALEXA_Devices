@@ -11,92 +11,92 @@ require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 include_file('core', 'authentification', 'php');
 
 if (!isConnect('admin')) {
-    throw new Exception('{{401 - Acceso no autorizado}}');
+    throw new Exception('{{401 - Unauthorized access}}');
 }
 
 $dep_info = alexa_devices::dependancy_info();
 if ($dep_info['state'] == 'nok') {
-    echo '<div class="alert alert-warning" style="margin: 15px 0;"><i class="fas fa-exclamation-triangle"></i> {{Las dependencias del plugin están desactualizadas o incompletas. Por favor, pulsa en "Reinstalar" en la sección de Dependencias para aplicar las últimas actualizaciones de Amazon Alexa.}}</div>';
+    echo '<div class="alert alert-warning" style="margin: 15px 0;"><i class="fas fa-exclamation-triangle"></i> {{Plugin dependencies are outdated or missing. Please click "Reinstall" in the Dependencies section to apply the latest Amazon Alexa updates.}}</div>';
 }
 ?>
 
 <form class="form-horizontal">
     <fieldset>
-        <legend><i class="fas fa-user-shield"></i> {{Autenticación Amazon Alexa}}</legend>
+        <legend><i class="fas fa-user-shield"></i> {{Amazon Alexa Authentication}}</legend>
 
         <div class="form-group">
-            <label class="col-sm-3 control-label">{{Servidor Amazon / Dominio}}</label>
+            <label class="col-sm-3 control-label">{{Amazon Server / Domain}}</label>
             <div class="col-sm-4">
                 <select class="configKey form-control" data-l1key="amazon_domain">
-                    <option value="es">{{Amazon España (amazon.es)}}</option>
-                    <option value="us">{{Amazon Estados Unidos (amazon.com)}}</option>
-                    <option value="fr">{{Amazon Francia (amazon.fr)}}</option>
-                    <option value="de">{{Amazon Alemania (amazon.de)}}</option>
-                    <option value="it">{{Amazon Italia (amazon.it)}}</option>
-                    <option value="gb">{{Amazon Reino Unido (amazon.co.uk)}}</option>
-                    <option value="mx">{{Amazon México (amazon.com.mx)}}</option>
-                    <option value="ca">{{Amazon Canadá (amazon.ca)}}</option>
-                    <option value="jp">{{Amazon Japón (amazon.co.jp)}}</option>
-                    <option value="br">{{Amazon Brasil (amazon.com.br)}}</option>
+                    <option value="es">{{Amazon Spain (amazon.es)}}</option>
+                    <option value="us">{{Amazon United States (amazon.com)}}</option>
+                    <option value="fr">{{Amazon France (amazon.fr)}}</option>
+                    <option value="de">{{Amazon Germany (amazon.de)}}</option>
+                    <option value="it">{{Amazon Italy (amazon.it)}}</option>
+                    <option value="gb">{{Amazon United Kingdom (amazon.co.uk)}}</option>
+                    <option value="mx">{{Amazon Mexico (amazon.com.mx)}}</option>
+                    <option value="ca">{{Amazon Canada (amazon.ca)}}</option>
+                    <option value="jp">{{Amazon Japan (amazon.co.jp)}}</option>
+                    <option value="br">{{Amazon Brazil (amazon.com.br)}}</option>
                     <option value="au">{{Amazon Australia (amazon.com.au)}}</option>
                 </select>
             </div>
             <div class="col-sm-5 help-block">
-                {{Selecciona el dominio de la tienda Amazon donde están registrados tus dispositivos Echo.}}
+                {{Select the Amazon store domain where your Echo devices are registered.}}
             </div>
         </div>
 
         <div class="form-group">
-            <label class="col-sm-3 control-label">{{Correo / Cuenta Amazon}}</label>
+            <label class="col-sm-3 control-label">{{Amazon Account / Email}}</label>
             <div class="col-sm-4">
-                <input type="text" class="configKey form-control" data-l1key="amazon_username" placeholder="usuario@ejemplo.com" />
+                <input type="text" class="configKey form-control" data-l1key="amazon_username" placeholder="user@example.com" />
             </div>
         </div>
 
         <div class="form-group">
-            <label class="col-sm-3 control-label">{{Estado de Sesión}}</label>
+            <label class="col-sm-3 control-label">{{Session Status}}</label>
             <div class="col-sm-4">
-                <span id="span_auth_status" class="label label-default" style="font-size: 14px; padding: 6px 12px;">{{Verificando...}}</span>
+                <span id="span_auth_status" class="label label-default" style="font-size: 14px; padding: 6px 12px;">{{Checking...}}</span>
             </div>
             <div class="col-sm-5">
                 <button type="button" class="btn btn-primary" id="btn_open_login_modal">
-                    <i class="fas fa-sign-in-alt"></i> {{Iniciar Sesión / 2FA OTP}}
+                    <i class="fas fa-sign-in-alt"></i> {{Sign In / 2FA OTP}}
                 </button>
             </div>
         </div>
     </fieldset>
 
     <fieldset>
-        <legend><i class="fas fa-cogs"></i> {{Configuración del Demonio Local}}</legend>
+        <legend><i class="fas fa-cogs"></i> {{Local Daemon Configuration}}</legend>
 
         <div class="form-group">
-            <label class="col-sm-3 control-label">{{Puerto del Demonio}}</label>
+            <label class="col-sm-3 control-label">{{Daemon Port}}</label>
             <div class="col-sm-3">
                 <input type="number" class="configKey form-control" data-l1key="daemon_port" placeholder="55065" />
             </div>
             <div class="col-sm-6 help-block">
-                {{Puerto TCP local para la API del demonio Python (por defecto: 55065).}}
+                {{Local TCP port for the Python daemon REST API (default: 55065).}}
             </div>
         </div>
 
         <div class="form-group">
-            <label class="col-sm-3 control-label">{{Intervalo de Polling (segundos)}}</label>
+            <label class="col-sm-3 control-label">{{Polling Interval (seconds)}}</label>
             <div class="col-sm-3">
                 <input type="number" class="configKey form-control" data-l1key="poll_interval" placeholder="300" />
             </div>
             <div class="col-sm-6 help-block">
-                {{Frecuencia de sincronización de seguridad con los servidores de Amazon (por defecto: 300s). La mayoría de eventos se reciben en tiempo real por push HTTP/2.}}
+                {{Backup polling frequency with Amazon servers (default: 300s). Most events are received in real-time via HTTP/2 push.}}
             </div>
         </div>
 
         <div class="form-group">
-            <label class="col-sm-3 control-label">{{Token Interno del Demonio}}</label>
+            <label class="col-sm-3 control-label">{{Internal Daemon Token}}</label>
             <div class="col-sm-4">
-                <input type="text" class="configKey form-control" data-l1key="daemon_token" placeholder="{{Generado automáticamente}}" readonly />
+                <input type="text" class="configKey form-control" data-l1key="daemon_token" placeholder="{{Automatically generated}}" readonly />
             </div>
             <div class="col-sm-2">
                 <button type="button" class="btn btn-default" id="btn_generate_token">
-                    <i class="fas fa-random"></i> {{Regenerar}}
+                    <i class="fas fa-random"></i> {{Regenerate}}
                 </button>
             </div>
         </div>
@@ -118,17 +118,17 @@ if ($dep_info['state'] == 'nok') {
             },
             dataType: 'json',
             error: function (request, status, error) {
-                $('#span_auth_status').removeClass('label-success label-danger').addClass('label-warning').text('{{Error de consulta}}');
+                $('#span_auth_status').removeClass('label-success label-danger').addClass('label-warning').text('{{Connection Error}}');
             },
             success: function (data) {
                 if (data.state != 'ok') {
-                    $('#span_auth_status').removeClass('label-success label-warning').addClass('label-danger').text('{{Desconectado}}');
+                    $('#span_auth_status').removeClass('label-success label-warning').addClass('label-danger').text('{{Disconnected}}');
                     return;
                 }
                 if (data.result.authenticated) {
-                    $('#span_auth_status').removeClass('label-danger label-warning').addClass('label-success').text('{{Sesión Activa: ' + (data.result.user || 'OK') + '}}');
+                    $('#span_auth_status').removeClass('label-danger label-warning').addClass('label-success').text('{{Active Session: ' + (data.result.user || 'OK') + '}}');
                 } else {
-                    $('#span_auth_status').removeClass('label-success label-warning').addClass('label-danger').text('{{No autenticado}}');
+                    $('#span_auth_status').removeClass('label-success label-warning').addClass('label-danger').text('{{Not Authenticated}}');
                 }
             }
         });
@@ -136,7 +136,7 @@ if ($dep_info['state'] == 'nok') {
 
     $('#btn_open_login_modal').on('click', function () {
         $('#md_modal').dialog({
-            title: "{{Conexión y Autenticación con Amazon Alexa}}",
+            title: "{{Amazon Alexa Connection & Authentication}}",
             height: 480,
             width: 600
         });

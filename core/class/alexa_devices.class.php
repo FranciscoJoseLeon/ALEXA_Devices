@@ -40,7 +40,7 @@ class alexa_devices extends eqLogic {
         self::deamon_stop();
         $deamon_info = self::deamon_info();
         if ($deamon_info['launchable'] != 'ok') {
-            throw new Exception(__('Por favor verifica la configuración del plugin y las dependencias.', __FILE__));
+            throw new Exception(__('Please verify plugin configuration and dependencies.', __FILE__));
         }
 
         $port = config::byKey('daemon_port', 'alexa_devices', 55065);
@@ -248,8 +248,8 @@ class alexa_devices extends eqLogic {
         $status = $this->getCmd(null, 'status');
         $isOnline = (is_object($status) && $status->execCmd() == 1);
         $replace['#status_display#'] = $isOnline
-            ? '<span class="label label-success" style="font-size:10px;"><i class="fas fa-wifi"></i> ' . __('En línea', __FILE__) . '</span>'
-            : '<span class="label label-danger" style="font-size:10px;"><i class="fas fa-times-circle"></i> ' . __('Desconectado', __FILE__) . '</span>';
+            ? '<span class="label label-success" style="font-size:10px;"><i class="fas fa-wifi"></i> ' . __('Online', __FILE__) . '</span>'
+            : '<span class="label label-danger" style="font-size:10px;"><i class="fas fa-times-circle"></i> ' . __('Offline', __FILE__) . '</span>';
 
         $dnd = $this->getCmd(null, 'dnd_status');
         $isDnd = (is_object($dnd) && $dnd->execCmd() == 1);
@@ -265,11 +265,11 @@ class alexa_devices extends eqLogic {
 
         $media = $this->getCmd(null, 'media_state');
         $mState = is_object($media) ? $media->execCmd() : '';
-        $replace['#media_state#'] = !empty($mState) ? htmlspecialchars($mState) : __('Inactivo', __FILE__);
+        $replace['#media_state#'] = !empty($mState) ? htmlspecialchars($mState) : __('Idle', __FILE__);
 
         $last = $this->getCmd(null, 'last_command');
         $lastVal = is_object($last) ? $last->execCmd() : '';
-        $replace['#last_command#'] = !empty($lastVal) ? htmlspecialchars($lastVal) : __('Sin comandos recientes', __FILE__);
+        $replace['#last_command#'] = !empty($lastVal) ? htmlspecialchars($lastVal) : __('No recent commands', __FILE__);
 
         $actionCmds = array('play', 'pause', 'next', 'previous', 'text_command', 'speak');
         foreach ($actionCmds as $c) {
@@ -281,50 +281,50 @@ class alexa_devices extends eqLogic {
     }
 
     public function createDefaultCommands($device = null) {
-        // 1. Info: Estado (Online / Offline)
-        $this->getOrCreateCmd('status', 'info', 'binary', __('Estado En Línea', __FILE__), false);
+        // 1. Info: Online Status
+        $this->getOrCreateCmd('status', 'info', 'binary', __('Online Status', __FILE__), false);
 
-        // 2. Info: Volumen actual
-        $this->getOrCreateCmd('volume', 'info', 'numeric', __('Volumen Actual', __FILE__), false, '#slider#');
+        // 2. Info: Current Volume
+        $this->getOrCreateCmd('volume', 'info', 'numeric', __('Current Volume', __FILE__), false, '#slider#');
 
-        // 3. Info: Estado Multimedia (PLAYING, PAUSED, IDLE)
-        $this->getOrCreateCmd('media_state', 'info', 'string', __('Estado Multimedia', __FILE__), false);
+        // 3. Info: Media State (PLAYING, PAUSED, IDLE)
+        $this->getOrCreateCmd('media_state', 'info', 'string', __('Media State', __FILE__), false);
 
-        // 4. Info: No Molestar
-        $this->getOrCreateCmd('dnd_status', 'info', 'binary', __('No Molestar', __FILE__), false);
+        // 4. Info: Do Not Disturb
+        $this->getOrCreateCmd('dnd_status', 'info', 'binary', __('Do Not Disturb', __FILE__), false);
 
-        // 5. Info: Último comando de voz detectado
-        $this->getOrCreateCmd('last_command', 'info', 'string', __('Último Comando Vocal', __FILE__), false);
+        // 5. Info: Last Voice Command
+        $this->getOrCreateCmd('last_command', 'info', 'string', __('Last Voice Command', __FILE__), false);
 
-        // 6. Action: TTS (Hablar)
-        $this->getOrCreateCmd('speak', 'action', 'message', __('Hablar (TTS)', __FILE__), true);
+        // 6. Action: TTS (Speak)
+        $this->getOrCreateCmd('speak', 'action', 'message', __('Speak (TTS)', __FILE__), true);
 
-        // 7. Action: Anuncio (Announcement con tono previo)
-        $this->getOrCreateCmd('announcement', 'action', 'message', __('Anuncio', __FILE__), true);
+        // 7. Action: Announcement (Chime + Speech)
+        $this->getOrCreateCmd('announcement', 'action', 'message', __('Announcement', __FILE__), true);
 
-        // 8. Action: Comando de texto (Emular voz por texto)
-        $this->getOrCreateCmd('text_command', 'action', 'message', __('Comando de Texto', __FILE__), true);
+        // 8. Action: Text command (Voice command emulation)
+        $this->getOrCreateCmd('text_command', 'action', 'message', __('Text Command', __FILE__), true);
 
-        // 9. Action: Ajustar volumen (Slider 0-100)
-        $volCmd = $this->getOrCreateCmd('set_volume', 'action', 'slider', __('Ajustar Volumen', __FILE__), true);
+        // 9. Action: Set Volume (Slider 0-100)
+        $volCmd = $this->getOrCreateCmd('set_volume', 'action', 'slider', __('Set Volume', __FILE__), true);
         if (is_object($volCmd)) {
             $volCmd->setConfiguration('minValue', 0);
             $volCmd->setConfiguration('maxValue', 100);
             $volCmd->save();
         }
 
-        // 10. Action: Reproducir / Pausa / Siguiente / Anterior
-        $this->getOrCreateCmd('play', 'action', 'other', __('Reproducir', __FILE__), true);
-        $this->getOrCreateCmd('pause', 'action', 'other', __('Pausar', __FILE__), true);
-        $this->getOrCreateCmd('next', 'action', 'other', __('Siguiente', __FILE__), true);
-        $this->getOrCreateCmd('previous', 'action', 'other', __('Anterior', __FILE__), true);
+        // 10. Action: Play / Pause / Next / Previous
+        $this->getOrCreateCmd('play', 'action', 'other', __('Play', __FILE__), true);
+        $this->getOrCreateCmd('pause', 'action', 'other', __('Pause', __FILE__), true);
+        $this->getOrCreateCmd('next', 'action', 'other', __('Next', __FILE__), true);
+        $this->getOrCreateCmd('previous', 'action', 'other', __('Previous', __FILE__), true);
 
-        // 11. Action: No molestar ON / OFF
-        $this->getOrCreateCmd('dnd_on', 'action', 'other', __('Activar No Molestar', __FILE__), true);
-        $this->getOrCreateCmd('dnd_off', 'action', 'other', __('Desactivar No Molestar', __FILE__), true);
+        // 11. Action: DND ON / OFF
+        $this->getOrCreateCmd('dnd_on', 'action', 'other', __('Enable Do Not Disturb', __FILE__), true);
+        $this->getOrCreateCmd('dnd_off', 'action', 'other', __('Disable Do Not Disturb', __FILE__), true);
 
-        // 12. Action: Reiniciar dispositivo
-        $this->getOrCreateCmd('restart', 'action', 'other', __('Reiniciar Echo', __FILE__), false);
+        // 12. Action: Restart Echo device
+        $this->getOrCreateCmd('restart', 'action', 'other', __('Restart Echo', __FILE__), false);
     }
 
     private function getOrCreateCmd($logicalId, $type, $subType, $name, $isVisible = true, $template = null) {
@@ -352,7 +352,7 @@ class alexa_devicesCmd extends cmd {
     public function execute($options = array()) {
         $eqLogic = $this->getEqLogic();
         if (!is_object($eqLogic)) {
-            throw new Exception(__('Dispositivo no encontrado', __FILE__));
+            throw new Exception(__('Device not found', __FILE__));
         }
 
         $serial = $eqLogic->getLogicalId();

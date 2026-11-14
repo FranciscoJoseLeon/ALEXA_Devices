@@ -28,16 +28,16 @@
                 <span class="alexa-media-state">#media_state#</span>
             </div>
             <div class="alexa-media-controls">
-                <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-alexa" data-cmd_id="#previous_id#" title="{{Anterior}}">
+                <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-alexa" data-cmd_id="#previous_id#" title="{{Previous}}">
                     <i class="fas fa-step-backward"></i>
                 </button>
-                <button type="button" class="btn btn-primary btn-circle cmd-btn-alexa" data-cmd_id="#play_id#" title="{{Reproducir}}">
+                <button type="button" class="btn btn-primary btn-circle cmd-btn-alexa" data-cmd_id="#play_id#" title="{{Play}}">
                     <i class="fas fa-play"></i>
                 </button>
-                <button type="button" class="btn btn-default btn-circle cmd-btn-alexa" data-cmd_id="#pause_id#" title="{{Pausar}}">
+                <button type="button" class="btn btn-default btn-circle cmd-btn-alexa" data-cmd_id="#pause_id#" title="{{Pause}}">
                     <i class="fas fa-pause"></i>
                 </button>
-                <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-alexa" data-cmd_id="#next_id#" title="{{Siguiente}}">
+                <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-alexa" data-cmd_id="#next_id#" title="{{Next}}">
                     <i class="fas fa-step-forward"></i>
                 </button>
             </div>
@@ -52,7 +52,7 @@
         </div>
 
         <!-- ÚLTIMO COMANDO VOCAL ESCUCHADO -->
-        <div class="alexa-last-cmd-bubble" title="{{Última orden escuchada por Alexa}}">
+        <div class="alexa-last-cmd-bubble" title="{{Last command heard by Alexa}}">
             <i class="fas fa-comment-dots" style="color: #00CAFA; margin-right: 4px;"></i>
             <span class="alexa-last-cmd-text">#last_command#</span>
         </div>
@@ -60,12 +60,12 @@
         <!-- ENVIAR ORDEN RÁPIDA O TTS -->
         <div class="alexa-quick-action-row">
             <div class="input-group input-group-sm">
-                <input type="text" class="form-control alexa-input-text" placeholder="{{Comando o hablar...}}" />
+                <input type="text" class="form-control alexa-input-text" placeholder="{{Command or speak...}}" />
                 <div class="input-group-btn">
-                    <button class="btn btn-info alexa-btn-send-cmd" data-cmd_id="#text_command_id#" title="{{Ejecutar como orden vocal}}">
+                    <button class="btn btn-info alexa-btn-send-cmd" data-cmd_id="#text_command_id#" title="{{Execute as voice command}}">
                         <i class="fas fa-terminal"></i>
                     </button>
-                    <button class="btn btn-default alexa-btn-send-speak" data-cmd_id="#speak_id#" title="{{Hacer hablar (TTS)}}">
+                    <button class="btn btn-default alexa-btn-send-speak" data-cmd_id="#speak_id#" title="{{Text to speech (TTS)}}">
                         <i class="fas fa-comment-alt"></i>
                     </button>
                 </div>
