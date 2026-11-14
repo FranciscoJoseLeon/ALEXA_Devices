@@ -21,7 +21,7 @@ echo 10 > "$PROGRESS_FILE"
 apt-get update
 
 echo 30 > "$PROGRESS_FILE"
-apt-get install -y python3 python3-pip python3-venv python3-dev libffi-dev libssl-dev git
+apt-get install -y python3 python3-pip python3-venv python3-dev libffi-dev libssl-dev git ca-certificates curl
 
 echo 60 > "$PROGRESS_FILE"
 mkdir -p demond/venv

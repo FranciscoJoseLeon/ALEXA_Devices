@@ -23,3 +23,11 @@ Plugin de integración nativa para dispositivos Amazon Echo y Alexa en Jeedom v4
 2. **Instalar dependencias**: Haz clic en **Instalar** en la sección de dependencias.
 3. **Conectar tu cuenta**: En la configuración del plugin, pulsa en **Iniciar Sesión / 2FA OTP** e introduce tus credenciales y el código de 6 dígitos.
 4. **Sincronizar**: Ve a **Plugins > Multimedia > Alexa Devices** y pulsa en **Sincronizar Dispositivos**.
+
+---
+
+## Descargo de Responsabilidad y Garantía
+
+- **No Afiliación**: Este plugin es un desarrollo independiente de la comunidad y **no** está afiliado, certificado ni respaldado por Amazon.com, Inc. o sus filiales.
+- **Sin Garantía (AS IS)**: Este software se ofrece "tal cual", sin garantías expresas o implícitas. Dado que depende de servicios en la nube de terceros, Amazon puede modificar sus protocolos en cualquier momento.
+- **Limitación de Responsabilidad**: En ningún caso los autores serán responsables de daños directos o indirectos, pérdidas de datos, fallos en automatizaciones domésticas o cortes de servicio derivados del uso de este software. El uso corre bajo tu propia responsabilidad.

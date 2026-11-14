@@ -47,6 +47,14 @@ $('#bt_resetSearch').on('click', function () {
     $('#in_searchEqlogic').val('').keyup();
 });
 
+$('#bt_showPluginLog').on('click', function () {
+    if (typeof jeedom.log.showLog === 'function') {
+        jeedom.log.showLog({logfile: 'alexa_devices'});
+    } else {
+        window.location.href = 'index.php?v=d&p=log&logfile=alexa_devices';
+    }
+});
+
 function addCmdToTable(_cmd) {
     if (!isset(_cmd)) {
         var _cmd = {configuration: {}};

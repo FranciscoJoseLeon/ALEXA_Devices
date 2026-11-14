@@ -126,3 +126,11 @@ chown -R www-data:www-data alexa_devices
 1. Dirígete a **Plugins > Multimedia > Alexa Devices**.
 2. Haz clic en **Sincronizar Dispositivos**.
 3. Todos tus altavoces y pantallas Echo aparecerán listados con sus mandos, volumen, sensores y controles interactivos listos para usar en tus escenarios y en el Dashboard.
+
+---
+
+## ⚖️ Descargo de Responsabilidad (Disclaimer)
+
+1. **No Afiliación con Amazon**: Este plugin es un proyecto de código abierto desarrollado de forma independiente por la comunidad y **NO** está respaldado, patrocinado, certificado ni afiliado de ninguna manera con Amazon.com, Inc., Amazon Technologies, Inc. ni ninguna de sus filiales. *Amazon*, *Echo*, *Alexa* y todas las marcas y logotipos relacionados son marcas registradas propiedad de Amazon.com, Inc. o sus subsidiarias.
+2. **Exención de Garantía (AS IS)**: Este software se suministra "tal cual" (*AS IS*), sin garantías de ningún tipo, explícitas o implícitas. Dado que depende de servicios en la nube y protocolos de terceros sujetos a modificaciones sin previo aviso por parte de Amazon, el funcionamiento puede verse afectado o interrumpido temporalmente.
+3. **Limitación de Responsabilidad**: En ningún caso los autores o colaboradores serán responsables de ningún daño directo, indirecto, incidental, especial o consecuente (incluyendo, entre otros, pérdida de datos, interrupción de servicios, fallos en automatizaciones del hogar o costes de recuperación) derivados del uso o imposibilidad de uso de este software. El usuario asume toda la responsabilidad derivada de su utilización.

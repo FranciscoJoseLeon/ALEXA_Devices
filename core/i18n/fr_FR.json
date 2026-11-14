@@ -32,6 +32,7 @@
         "Disconnected": "Déconnecté",
         "Active Session: ": "Session active : ",
         "Not Authenticated": "Non authentifié",
+        "This plugin is an independent community development and is not affiliated with or endorsed by Amazon.com, Inc. The software is provided \"AS IS\", without warranty of any kind.": "Ce plugin est un développement communautaire indépendant et n'est ni affilié ni approuvé par Amazon.com, Inc. Le logiciel est fourni \"EN L'ÉTAT\", sans garantie d'aucune sorte.",
         "Amazon Alexa Connection & Authentication": "Connexion et authentification Amazon Alexa"
     },
     "plugins/alexa_devices/desktop/modal/login.modal.php": {
@@ -60,6 +61,7 @@
         "401 - Unauthorized access": "401 - Accès non autorisé",
         "Search...": "Rechercher...",
         "Alexa Devices Management": "Gestion d'Alexa Devices",
+        "Logs": "Logs",
         "Synchronize Devices": "Synchroniser les appareils",
         "Configuration": "Configuration",
         "My Echo & Alexa Devices": "Mes appareils Echo et Alexa",

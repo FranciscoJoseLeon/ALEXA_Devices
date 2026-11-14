@@ -1,0 +1,27 @@
+# Python virtual environments and cache
+venv/
+resources/demond/venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Sensitive session and authentication data
+resources/data/storage/*
+!resources/data/storage/.gitkeep
+resources/data/*.json
+resources/data/*.tmp
+
+# Logs and runtime files
+*.log
+*.pid
+/tmp/jeedom_install_in_progress_*
+
+# System and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Internal developer sync state
+tools/.upstream_state.json
+tools/last_report.md

@@ -101,6 +101,11 @@ if ($dep_info['state'] == 'nok') {
             </div>
         </div>
     </fieldset>
+
+    <div class="alert alert-info" style="margin-top: 20px; font-size: 11px;">
+        <i class="fas fa-info-circle"></i>
+        {{This plugin is an independent community development and is not affiliated with or endorsed by Amazon.com, Inc. The software is provided "AS IS", without warranty of any kind.}}
+    </div>
 </form>
 
 <script>

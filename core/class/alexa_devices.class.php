@@ -17,7 +17,7 @@ class alexa_devices extends eqLogic {
 
     public static function deamon_info() {
         $return = array();
-        $return['log'] = 'alexa_devices';
+        $return['log'] = 'alexa_devices_daemon';
         $return['state'] = 'nok';
 
         $port = config::byKey('daemon_port', 'alexa_devices', 55065);
@@ -33,7 +33,16 @@ class alexa_devices extends eqLogic {
         }
 
         $return['launchable'] = 'ok';
+        $return['auto'] = (config::byKey('deamonAutoMode', 'alexa_devices', 1) == 1) ? 1 : 0;
         return $return;
+    }
+
+    public static function cron5() {
+        $deamon_info = self::deamon_info();
+        if ($deamon_info['auto'] == 1 && $deamon_info['state'] != 'ok') {
+            log::add('alexa_devices', 'info', 'Watchdog: Daemon is stopped, restarting...');
+            self::deamon_start();
+        }
     }
 
     public static function deamon_start() {
@@ -79,11 +88,11 @@ class alexa_devices extends eqLogic {
         elseif ($log_level >= 400) $log_str = 'error';
         $cmd .= ' --loglevel ' . $log_str;
 
-        $log_file = log::getPathToLog('alexa_devices');
+        $log_file = log::getPathToLog('alexa_devices_daemon');
         $pid_file = jeedom::getTmpFolder('alexa_devices') . '/daemon.pid';
         $full_cmd = $cmd . ' >> ' . $log_file . ' 2>&1 & echo $! > ' . $pid_file;
 
-        log::add('alexa_devices', 'info', 'Iniciando demonio Alexa Devices: ' . $full_cmd);
+        log::add('alexa_devices', 'info', 'Starting Alexa Devices daemon: ' . $full_cmd);
         exec($full_cmd);
 
         $i = 0;
@@ -97,7 +106,7 @@ class alexa_devices extends eqLogic {
         }
 
         if ($i >= 10) {
-            log::add('alexa_devices', 'error', 'No se pudo iniciar el demonio Alexa Devices');
+            log::add('alexa_devices', 'error', 'Could not start Alexa Devices daemon');
             return false;
         }
 
@@ -117,7 +126,7 @@ class alexa_devices extends eqLogic {
             }
             unlink($pid_file);
         }
-        log::add('alexa_devices', 'info', 'Demonio Alexa Devices detenido.');
+        log::add('alexa_devices', 'info', 'Alexa Devices daemon stopped.');
     }
 
     public static function dependancy_info() {

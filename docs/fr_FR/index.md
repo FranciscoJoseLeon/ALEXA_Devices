@@ -24,3 +24,11 @@ Plugin d'intégration moderne pour les appareils Amazon Echo et compatibles Alex
 2. **Installer les dépendances** : Cliquez sur **Installer** dans la section Dépendances pour initialiser l'environnement virtuel Python 3 et les bibliothèques.
 3. **Se connecter à Amazon** : Dans la configuration du plugin, choisissez votre domaine Amazon, cliquez sur **Connexion / 2FA OTP**, puis renseignez vos identifiants Amazon et le code OTP à 6 chiffres.
 4. **Découvrir les appareils** : Allez dans **Plugins > Multimédia > Alexa Devices** et cliquez sur **Synchroniser les appareils**.
+
+---
+
+## Avertissement et limitation de responsabilité
+
+- **Non-affiliation** : Ce plugin est un projet communautaire indépendant et n'est **en aucun cas** affilié, approuvé ou certifié par Amazon.com, Inc. ou Amazon Technologies, Inc. Toutes les marques appartiennent à leurs propriétaires respectifs.
+- **Exclusion de garantie** : Ce logiciel est fourni **"en l'état" (AS IS)**, sans garantie d'aucune sorte, expresse ou implicite. Les protocoles et API tiers dans le cloud peuvent être modifiés sans préavis par Amazon.
+- **Limitation de responsabilité** : Les auteurs et contributeurs ne peuvent en aucun cas être tenus responsables des dommages directs ou indirects, pertes de données, interruptions de service ou dysfonctionnements domotiques résultant de l'utilisation de ce logiciel. L'utilisation se fait sous votre seule responsabilité.

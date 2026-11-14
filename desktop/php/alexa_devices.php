@@ -50,6 +50,11 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 <br>
                 <span>{{Configuration}}</span>
             </div>
+            <div class="cursor eqLogicAction logoSecondary" id="bt_showPluginLog">
+                <i class="fas fa-file-alt"></i>
+                <br>
+                <span>{{Logs}}</span>
+            </div>
         </div>
 
         <legend><i class="fas fa-volume-up"></i> {{My Echo & Alexa Devices}}</legend>
