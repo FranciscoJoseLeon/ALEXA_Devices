@@ -55,7 +55,24 @@
         "Connecting to Amazon...": "Connecting to Amazon...",
         "Please complete all fields.": "Please complete all fields.",
         "Network or communication error: ": "Network or communication error: ",
-        "Connection established successfully. Discovering devices...": "Connection established successfully. Discovering devices..."
+        "Connection established successfully. Discovering devices...": "Connection established successfully. Discovering devices...",
+        "Official Amazon Authentication (Recommended)": "Official Amazon Authentication (Recommended)",
+        "This method opens the official Amazon verification window and supports all security options:": "This method opens the official Amazon verification window and supports all security options:",
+        "Amazon App Approval": "Amazon App Approval",
+        "Authenticator / Passkey": "Authenticator / Passkey",
+        "Open Official Amazon Login Window": "Open Official Amazon Login Window",
+        "Waiting for sign-in on Amazon window... Once completed, this dialog will update automatically.": "Waiting for sign-in on Amazon window... Once completed, this dialog will update automatically.",
+        "Pop-up blocked by your browser. Please allow pop-ups for this site or open manually: ": "Pop-up blocked by your browser. Please allow pop-ups for this site or open manually: ",
+        "Advanced options / Manual sign-in": "Advanced options / Manual sign-in",
+        "Paste authorization code or return URL": "Paste authorization code or return URL",
+        "If the automatic window does not close or you completed sign-in in another browser, paste the final return URL or authorization code below:": "If the automatic window does not close or you completed sign-in in another browser, paste the final return URL or authorization code below:",
+        "Validate": "Validate",
+        "Direct credential login (for Authenticator App / TOTP)": "Direct credential login (for Authenticator App / TOTP)",
+        "Submit credentials": "Submit credentials",
+        "Authentication successful!": "Authentication successful!",
+        "Authentication validated successfully!": "Authentication validated successfully!",
+        "Connected successfully! Discovering devices...": "Connected successfully! Discovering devices...",
+        "Communication error: ": "Communication error: "
     },
     "plugins/alexa_devices/desktop/php/alexa_devices.php": {
         "401 - Unauthorized access": "401 - Unauthorized access",
@@ -128,6 +145,7 @@
     "plugins/alexa_devices/core/ajax/alexa_devices.ajax.php": {
         "401 - Unauthorized access": "401 - Unauthorized access",
         "You must provide username, password, and OTP code.": "You must provide username, password, and OTP code.",
+        "Please provide an authorization code or return URL.": "Please provide an authorization code or return URL.",
         "No valid action provided.": "No valid action provided."
     },
     "plugins/alexa_devices/core/php/jeeAlexaDevices.php": {

@@ -78,6 +78,30 @@ try {
         }
     }
 
+    if ($action == 'submitManualCode') {
+        $code = init('code');
+        $domain = init('domain', 'es');
+        if (empty($code)) {
+            throw new Exception(__('Please provide an authorization code or return URL.', __FILE__));
+        }
+
+        try {
+            $result = alexa_devices::callDaemon('/api/manual_code', array('code' => $code, 'domain' => $domain), 'POST');
+            ajax::success($result);
+        } catch (Exception $e) {
+            ajax::error($e->getMessage());
+        }
+    }
+
+    if ($action == 'getProxyStatus') {
+        try {
+            $status = alexa_devices::callDaemon('/api/proxy_status', array(), 'GET');
+            ajax::success($status);
+        } catch (Exception $e) {
+            ajax::error($e->getMessage());
+        }
+    }
+
     throw new Exception(__('No valid action provided.', __FILE__));
 
 } catch (Exception $e) {

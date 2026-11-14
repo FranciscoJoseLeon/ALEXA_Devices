@@ -55,7 +55,24 @@
         "Connecting to Amazon...": "Conectando con Amazon...",
         "Please complete all fields.": "Por favor, completa todos los campos.",
         "Network or communication error: ": "Error de red o comunicación: ",
-        "Connection established successfully. Discovering devices...": "Conexión establecida con éxito. Descubriendo dispositivos..."
+        "Connection established successfully. Discovering devices...": "Conexión establecida con éxito. Descubriendo dispositivos...",
+        "Official Amazon Authentication (Recommended)": "Autenticación Oficial de Amazon (Recomendado)",
+        "This method opens the official Amazon verification window and supports all security options:": "Este método abre la ventana oficial de verificación de Amazon y admite todas las opciones de seguridad:",
+        "Amazon App Approval": "Aprobación en App de Amazon",
+        "Authenticator / Passkey": "App Autenticadora / Passkey",
+        "Open Official Amazon Login Window": "Abrir Ventana Oficial de Amazon",
+        "Waiting for sign-in on Amazon window... Once completed, this dialog will update automatically.": "Esperando el inicio de sesión en la ventana de Amazon... Al completarlo, esta ventana se actualizará automáticamente.",
+        "Pop-up blocked by your browser. Please allow pop-ups for this site or open manually: ": "Ventana emergente bloqueada por tu navegador. Permite las ventanas emergentes para este sitio o ábrela manualmente: ",
+        "Advanced options / Manual sign-in": "Opciones avanzadas / Inicio de sesión manual",
+        "Paste authorization code or return URL": "Pegar código de autorización o URL de retorno",
+        "If the automatic window does not close or you completed sign-in in another browser, paste the final return URL or authorization code below:": "Si la ventana automática no se cierra o completaste el inicio de sesión en otro navegador, pega la URL final de retorno o el código de autorización a continuación:",
+        "Validate": "Validar",
+        "Direct credential login (for Authenticator App / TOTP)": "Inicio directo por credenciales (para App Autenticadora / TOTP)",
+        "Submit credentials": "Enviar credenciales",
+        "Authentication successful!": "¡Autenticación completada con éxito!",
+        "Authentication validated successfully!": "¡Autenticación validada con éxito!",
+        "Connected successfully! Discovering devices...": "¡Conectado con éxito! Descubriendo dispositivos...",
+        "Communication error: ": "Error de comunicación: "
     },
     "plugins/alexa_devices/desktop/php/alexa_devices.php": {
         "401 - Unauthorized access": "401 - Acceso no autorizado",
@@ -128,6 +145,7 @@
     "plugins/alexa_devices/core/ajax/alexa_devices.ajax.php": {
         "401 - Unauthorized access": "401 - Acceso no autorizado",
         "You must provide username, password, and OTP code.": "Debes proporcionar usuario, contraseña y código OTP.",
+        "Please provide an authorization code or return URL.": "Por favor, proporciona un código de autorización o URL de retorno.",
         "No valid action provided.": "Ninguna acción válida proporcionada."
     },
     "plugins/alexa_devices/core/php/jeeAlexaDevices.php": {

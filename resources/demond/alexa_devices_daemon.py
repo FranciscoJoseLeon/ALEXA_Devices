@@ -6,11 +6,17 @@ Async daemon powered by aioamazondevices and HTTP/2 AVS push.
 
 import argparse
 import asyncio
+import base64
+import hashlib
 import json
 import logging
 import os
+import secrets
 import signal
 import sys
+import time
+import urllib.parse
+import uuid
 from pathlib import Path
 from typing import Any, Optional
 
@@ -20,6 +26,7 @@ import httpx
 
 try:
     from aioamazondevices.api import AmazonEchoApi
+    from aioamazondevices.const.http import AMAZON_DEVICE_TYPE
     from aioamazondevices.exceptions import (
         CannotAuthenticate,
         CannotConnect,
@@ -65,6 +72,7 @@ class AlexaDaemon:
         self.current_user: Optional[str] = None
         self.poll_task: Optional[asyncio.Task] = None
         self.session_file = self.storage_dir / "daemon_session.json"
+        self.active_proxy: dict[str, Any] = {}
 
     async def init_session_from_disk(self):
         """Intenta inicializar la sesión de Amazon a partir de datos guardados previamente."""
@@ -77,10 +85,10 @@ class AlexaDaemon:
                 saved = json.load(f)
 
             username = saved.get("username")
-            password = saved.get("password")
+            password = saved.get("password", "")
             login_data = saved.get("login_data")
 
-            if not username or not password:
+            if not username or not login_data:
                 return False
 
             LOGGER.info("Intentando restaurar sesión para el usuario %s", username)
@@ -378,6 +386,448 @@ class AlexaDaemon:
         devs = await self.refresh_devices()
         return web.json_response({"status": "ok", "devices_count": len(devs)})
 
+    # ================= AMAZON OAUTH PROXY =================
+
+    DOMAIN_HANDLES = {
+        "es": "_es",
+        "fr": "_fr",
+        "de": "_de",
+        "it": "_it",
+        "gb": "_uk",
+        "co.uk": "_uk",
+        "ca": "_ca",
+        "mx": "_mx",
+        "com.mx": "_mx",
+        "jp": "_jp",
+        "com": "",
+        "us": "",
+    }
+
+    DOMAIN_LANGUAGES = {
+        "es": "es_ES",
+        "fr": "fr_FR",
+        "de": "de_DE",
+        "it": "it_IT",
+        "gb": "en_GB",
+        "co.uk": "en_GB",
+        "ca": "en_CA",
+        "mx": "es_MX",
+        "com.mx": "es_MX",
+        "jp": "ja_JP",
+        "com": "en_US",
+        "us": "en_US",
+    }
+
+    async def complete_oauth(self, authcode: str, proxy_data: dict[str, Any]) -> bool:
+        """Completa el registro del dispositivo tras capturar el authorization_code de Amazon."""
+        try:
+            LOGGER.info("Registrando dispositivo Alexa con el código de autorización recibido...")
+            code_verifier = proxy_data["code_verifier"]
+            serial = proxy_data["serial"]
+            domain = proxy_data["domain"]
+            domain_suffix = "com" if domain == "us" else ("co.uk" if domain == "gb" else domain)
+            site = f"https://www.amazon.{domain_suffix}"
+
+            if self.session:
+                await self.session.close()
+            self.session = aiohttp.ClientSession()
+
+            self.api = AmazonEchoApi(
+                self.session,
+                "alexa_user",
+                "",
+                save_data=AmazonSaveDataConfig(path=self.storage_dir),
+            )
+            self.api._session_state_data.country_specific_data(site)
+            self.api.login._serial = serial
+
+            self._register_event_listeners()
+
+            login_result = await self.api.login._register_device({
+                "authorization_code": authcode,
+                "code_verifier": code_verifier,
+                "domain": self.api._session_state_data.domain,
+            })
+            self.api.login._session_state_data.login_stored_data = login_result
+
+            await self.api.login._domain_refresh_auth_cookies()
+            await self.api.login._register_device_capabilities()
+            await self.api.login.obtain_account_customer_id()
+
+            self.api.login._session_state_data.login_stored_data.update({"site": site})
+
+            customer_info = login_result.get("customer_info", {})
+            user_name = customer_info.get("name") or customer_info.get("user_id") or "Amazon User"
+
+            self.is_authenticated = True
+            self.current_user = user_name
+            if self.active_proxy:
+                self.active_proxy["status"] = "success"
+
+            with open(self.session_file, "w", encoding="utf-8") as f:
+                json.dump({
+                    "username": user_name,
+                    "site": site,
+                    "domain": domain,
+                    "login_data": login_result,
+                }, f, indent=2)
+
+            LOGGER.info("¡Autenticación OAuth exitosa para %s (%s)!", user_name, site)
+
+            await self.refresh_devices()
+            await self.start_http2()
+
+            await self._send_to_jeedom("auth_success", {"user": user_name, "site": site})
+            return True
+        except Exception as err:
+            LOGGER.exception("Error al completar el registro OAuth en Amazon: %s", err)
+            self.is_authenticated = False
+            if self.active_proxy:
+                self.active_proxy["status"] = "error"
+                self.active_proxy["error"] = str(err)
+            return False
+
+    async def handle_proxy_start(self, request: web.Request) -> web.Response:
+        """Inicia una sesión de proxy web para el login oficial de Amazon."""
+        domain = request.query.get("domain", "es")
+        proxy_base = request.query.get("proxy_base", "plugins/alexa_devices/core/php/proxy.php")
+
+        base_handle = self.DOMAIN_HANDLES.get(domain, f"_{domain}")
+        language = self.DOMAIN_LANGUAGES.get(domain, "es_ES")
+        domain_suffix = "com" if domain == "us" else ("co.uk" if domain == "gb" else domain)
+
+        temp_session = aiohttp.ClientSession()
+        temp_api = AmazonEchoApi(temp_session, "alexa_user", "", save_data=AmazonSaveDataConfig(path=self.storage_dir))
+        temp_api._session_state_data.country_specific_data(f"https://www.amazon.{domain_suffix}")
+
+        verifier = temp_api.login._create_code_verifier()
+        challenge = temp_api.login._create_s256_code_challenge(verifier).decode("ascii")
+        serial = temp_api.login._serial
+        client_id = temp_api.login._build_client_id()
+        await temp_session.close()
+
+        amazon_host = f"www.amazon.{domain_suffix}"
+        return_to = f"https://{amazon_host}/ap/maplanding"
+
+        oauth_url = (
+            f"https://{amazon_host}/ap/signin"
+            f"?openid.return_to={urllib.parse.quote(return_to, safe='')}"
+            f"&openid.assoc_handle=amzn_dp_project_dee_ios{base_handle}"
+            f"&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select"
+            f"&pageId=amzn_dp_project_dee_ios{base_handle}"
+            f"&accountStatusPolicy=P1"
+            f"&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select"
+            f"&openid.mode=checkid_setup"
+            f"&openid.ns.oa2=http%3A%2F%2F{amazon_host}%2Fap%2Fext%2Foauth%2F2"
+            f"&openid.oa2.client_id=device%3A{client_id}"
+            f"&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0"
+            f"&openid.oa2.response_type=code"
+            f"&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0"
+            f"&openid.pape.max_auth_age=0"
+            f"&openid.oa2.scope=device_auth_access"
+            f"&openid.oa2.code_challenge_method=S256"
+            f"&openid.oa2.code_challenge={challenge}"
+            f"&language={language}"
+        )
+
+        if "session" in self.active_proxy:
+            try:
+                await self.active_proxy["session"].close()
+            except Exception:
+                pass
+
+        cookie_jar = aiohttp.CookieJar(unsafe=True)
+        proxy_session = aiohttp.ClientSession(cookie_jar=cookie_jar)
+
+        self.active_proxy = {
+            "session": proxy_session,
+            "code_verifier": verifier,
+            "serial": serial,
+            "domain": domain,
+            "client_id": client_id,
+            "proxy_base": proxy_base,
+            "amazon_host": amazon_host,
+            "status": "authenticating",
+            "created_at": time.time(),
+        }
+
+        LOGGER.info("Sesión de proxy oficial Amazon iniciada para dominio %s (host %s)", domain, amazon_host)
+        redirect_url = f"{proxy_base}?url={urllib.parse.quote(oauth_url, safe='')}"
+        raise web.HTTPFound(redirect_url)
+
+    async def handle_proxy_relay(self, request: web.Request) -> web.Response:
+        """Reenvía peticiones y respuestas entre el navegador y la web oficial de Amazon."""
+        if not self.active_proxy or not self.active_proxy.get("session"):
+            return web.Response(
+                text="No hay sesión de autenticación activa. Por favor, abre de nuevo la ventana oficial de Amazon.",
+                status=400,
+                content_type="text/plain; charset=utf-8",
+            )
+
+        target_url = request.query.get("url", "")
+        proxy_base = self.active_proxy.get("proxy_base", "plugins/alexa_devices/core/php/proxy.php")
+        domain = self.active_proxy.get("domain", "es")
+        amazon_host = self.active_proxy.get("amazon_host", f"www.amazon.{domain}")
+
+        if not target_url:
+            path = request.query.get("path", "")
+            if path:
+                target_url = f"https://{amazon_host}/{path.lstrip('/')}"
+            else:
+                return web.Response(text="URL no especificada en el proxy.", status=400, content_type="text/plain; charset=utf-8")
+
+        # 1. Comprobar si hemos llegado a /ap/maplanding con el código de retorno
+        if "/ap/maplanding" in target_url:
+            parsed = urllib.parse.urlparse(target_url)
+            params = urllib.parse.parse_qs(parsed.query)
+            authcode = params.get("openid.oa2.authorization_code", [""])[0]
+
+            if authcode:
+                LOGGER.info("¡Código de autorización capturado desde URL de mapa de aterrizaje!")
+                success = await self.complete_oauth(authcode, self.active_proxy)
+                if success:
+                    return self._render_success_page()
+                else:
+                    return web.Response(text="Error registrando en Amazon.", status=500, content_type="text/plain; charset=utf-8")
+
+        # 2. Reenviar petición a Amazon
+        proxy_session: aiohttp.ClientSession = self.active_proxy["session"]
+        method = request.method
+
+        headers = {}
+        for k, v in request.headers.items():
+            if k.lower() in ("host", "content-length", "accept-encoding"):
+                continue
+            headers[k] = v
+
+        parsed_target = urllib.parse.urlparse(target_url)
+        headers["Host"] = parsed_target.netloc or amazon_host
+        headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+        body = None
+        if method in ("POST", "PUT", "PATCH"):
+            body = await request.read()
+
+        try:
+            async with proxy_session.request(
+                method,
+                target_url,
+                data=body,
+                headers=headers,
+                allow_redirects=False,
+            ) as resp:
+                resp_status = resp.status
+                resp_headers = {}
+
+                # Interceptar redirecciones (301, 302, 303, 307)
+                if resp_status in (301, 302, 303, 307):
+                    location = resp.headers.get("Location", "")
+                    if "/ap/maplanding" in location:
+                        LOGGER.info("Redirección hacia maplanding detectada!")
+                        parsed_loc = urllib.parse.urlparse(location)
+                        params = urllib.parse.parse_qs(parsed_loc.query)
+                        authcode = params.get("openid.oa2.authorization_code", [""])[0]
+                        if authcode:
+                            success = await self.complete_oauth(authcode, self.active_proxy)
+                            if success:
+                                return self._render_success_page()
+                            else:
+                                return web.Response(text="Error al registrar en Amazon.", status=500)
+
+                    if location:
+                        if location.startswith("/"):
+                            location = f"https://{amazon_host}" + location
+                        rewritten_loc = f"{proxy_base}?url={urllib.parse.quote(location, safe='')}"
+                        resp_headers["Location"] = rewritten_loc
+                        return web.Response(status=resp_status, headers=resp_headers)
+
+                content = await resp.read()
+                content_type = resp.headers.get("Content-Type", "")
+
+                for hk, hv in resp.headers.items():
+                    if hk.lower() in (
+                        "content-security-policy",
+                        "content-security-policy-report-only",
+                        "x-frame-options",
+                        "strict-transport-security",
+                        "content-encoding",
+                        "transfer-encoding",
+                    ):
+                        continue
+                    resp_headers[hk] = hv
+
+                if "text/html" in content_type:
+                    try:
+                        text = content.decode("utf-8", errors="replace")
+                        text = self._rewrite_amazon_html(text, amazon_host, proxy_base)
+                        content = text.encode("utf-8")
+                        resp_headers["Content-Length"] = str(len(content))
+                    except Exception as err:
+                        LOGGER.warning("Error al reescribir HTML: %s", err)
+
+                return web.Response(
+                    body=content,
+                    status=resp_status,
+                    headers=resp_headers,
+                )
+
+        except Exception as err:
+            LOGGER.error("Error en proxy relay hacia %s: %s", target_url, err)
+            return web.Response(text=f"Error en proxy: {err}", status=502, content_type="text/plain; charset=utf-8")
+
+    def _rewrite_amazon_html(self, html: str, amazon_host: str, proxy_base: str) -> str:
+        """Adapta enlaces y formularios en el HTML de Amazon para canalizarlos por el proxy."""
+        html = html.replace(f'action="https://{amazon_host}/', f'action="{proxy_base}?url=https://{amazon_host}/')
+        html = html.replace(f"action='https://{amazon_host}/", f"action='{proxy_base}?url=https://{amazon_host}/")
+        html = html.replace('action="/', f'action="{proxy_base}?url=https://{amazon_host}/')
+        html = html.replace("action='/", f"action='{proxy_base}?url=https://{amazon_host}/")
+
+        html = html.replace('href="/ap/', f'href="{proxy_base}?url=https://{amazon_host}/ap/')
+        html = html.replace(f'href="https://{amazon_host}/ap/', f'href="{proxy_base}?url=https://{amazon_host}/ap/')
+
+        helper_script = f"""
+<script>
+(function() {{
+    var pBase = "{proxy_base}";
+    var aHost = "{amazon_host}";
+    document.addEventListener("submit", function(e) {{
+        var f = e.target;
+        if (f && f.action && f.action.indexOf("proxy.php") === -1 && f.action.indexOf("proxy/relay") === -1) {{
+            var fullUrl = f.action;
+            if (fullUrl.indexOf("http") !== 0) {{
+                fullUrl = "https://" + aHost + (fullUrl.charAt(0) === "/" ? "" : "/") + fullUrl;
+            }}
+            f.action = pBase + "?url=" + encodeURIComponent(fullUrl);
+        }}
+    }}, true);
+    document.addEventListener("click", function(e) {{
+        var a = e.target.closest("a");
+        if (a && a.href && a.href.indexOf("proxy.php") === -1 && (a.href.indexOf(aHost) !== -1 || (a.getAttribute("href") && a.getAttribute("href").indexOf("/ap/") === 0))) {{
+            var full = a.href;
+            e.preventDefault();
+            window.location.href = pBase + "?url=" + encodeURIComponent(full);
+        }}
+    }}, true);
+}})();
+</script>
+"""
+        if "</body>" in html:
+            html = html.replace("</body>", helper_script + "</body>")
+        else:
+            html += helper_script
+
+        return html
+
+    def _render_success_page(self) -> web.Response:
+        """Devuelve una página de confirmación visual amigable al usuario."""
+        html = """<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amazon Alexa - Autenticación Exitosa</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #1e1e24;
+    color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .card {
+    background: #2a2a35;
+    border: 1px solid #3c3c4d;
+    border-radius: 12px;
+    padding: 35px 25px;
+    text-align: center;
+    max-width: 440px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .icon {
+    width: 64px;
+    height: 64px;
+    background: #28a745;
+    color: white;
+    font-size: 38px;
+    line-height: 64px;
+    border-radius: 50%;
+    margin: 0 auto 20px auto;
+    font-weight: bold;
+  }
+  h2 { margin: 0 0 12px 0; color: #ffffff; font-size: 22px; }
+  p { color: #a0a0b0; font-size: 14px; line-height: 1.5; margin: 0 0 20px 0; }
+  .btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .btn:hover { background: #0069d9; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">✓</div>
+    <h2>¡Conexión completada con éxito!</h2>
+    <p>Tu cuenta de Amazon Alexa se ha vinculado correctamente a Jeedom.<br>Tus dispositivos se están sincronizando.</p>
+    <button class="btn" onclick="window.close();">Cerrar ventana</button>
+  </div>
+  <script>
+    setTimeout(function() {
+      try { window.close(); } catch(e) {}
+    }, 2000);
+  </script>
+</body>
+</html>"""
+        return web.Response(text=html, content_type="text/html; charset=utf-8")
+
+    async def handle_proxy_status(self, request: web.Request) -> web.Response:
+        """Devuelve el estado de la autenticación por proxy."""
+        return web.json_response({
+            "status": self.active_proxy.get("status", "idle") if self.active_proxy else "idle",
+            "authenticated": self.is_authenticated,
+            "user": self.current_user,
+            "devices_count": len(self.devices),
+        })
+
+    async def handle_manual_code(self, request: web.Request) -> web.Response:
+        """Permite validar un código o URL de retorno introducido manualmente."""
+        try:
+            data = await request.json()
+        except Exception:
+            return web.json_response({"error": "JSON inválido"}, status=400)
+
+        raw_input = data.get("code") or data.get("url") or ""
+        domain = data.get("domain", "es")
+
+        if not raw_input:
+            return web.json_response({"error": "Código o URL no proporcionado"}, status=400)
+
+        authcode = raw_input
+        if "openid.oa2.authorization_code=" in raw_input:
+            parsed = urllib.parse.urlparse(raw_input)
+            params = urllib.parse.parse_qs(parsed.query)
+            authcode = params.get("openid.oa2.authorization_code", [raw_input])[0]
+
+        proxy_data = self.active_proxy or {
+            "code_verifier": base64.urlsafe_b64encode(secrets.token_bytes(32)).rstrip(b"="),
+            "serial": uuid.uuid4().hex.upper(),
+            "domain": domain,
+        }
+
+        success = await self.complete_oauth(authcode, proxy_data)
+        if success:
+            return web.json_response({"status": "ok", "message": "Autenticación manual completada"})
+        else:
+            return web.json_response({"error": "Error registrando dispositivo en Amazon"}, status=500)
+
     async def handle_command(self, request: web.Request) -> web.Response:
         """Ejecuta una acción o comando en un dispositivo Echo específico."""
         try:
@@ -460,6 +910,10 @@ class AlexaDaemon:
         self.app.router.add_get("/api/devices", self.handle_devices)
         self.app.router.add_post("/api/sync", self.handle_sync)
         self.app.router.add_post("/api/command", self.handle_command)
+        self.app.router.add_get("/proxy/start", self.handle_proxy_start)
+        self.app.router.add_route("*", "/proxy/relay", self.handle_proxy_relay)
+        self.app.router.add_get("/api/proxy_status", self.handle_proxy_status)
+        self.app.router.add_post("/api/manual_code", self.handle_manual_code)
 
         self.runner = web.AppRunner(self.app)
         await self.runner.setup()
