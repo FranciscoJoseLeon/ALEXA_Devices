@@ -72,6 +72,7 @@
             </div>
             <div class="input-group input-group-sm" style="margin-top: 4px;">
                 <input type="text" class="form-control alexa-input-text" placeholder="{{Text to speak (SSML supported)...}}" />
+                <select class="form-control alexa-input-select" style="display: none;"></select>
                 <input type="number" class="form-control alexa-input-slider" min="0" max="100" value="#volume#" style="display: none;" />
                 <div class="input-group-btn">
                     <button type="button" class="btn btn-info alexa-btn-run-selected" title="{{Execute command}}">
@@ -191,11 +192,16 @@
             color: #FFF !important;
         }
         .alexa-quick-action-row .form-control.alexa-input-text,
+        .alexa-quick-action-row .form-control.alexa-input-select,
         .alexa-quick-action-row .form-control.alexa-input-slider {
             background: rgba(255, 255, 255, 0.1) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             color: #FFF !important;
             border-radius: 4px 0 0 4px !important;
+        }
+        .alexa-quick-action-row .form-control.alexa-input-select option {
+            background: #1b2430;
+            color: #FFF;
         }
     </style>
 
@@ -207,10 +213,27 @@
                 var $opt = $widget.find('.alexa-widget-cmd-select option:selected');
                 var sub = $opt.attr('data-subtype') || 'other';
                 var ph = $opt.attr('data-placeholder') || '';
+                var optsRaw = $opt.attr('data-options') || '';
                 var $txt = $widget.find('.alexa-input-text');
+                var $selOpt = $widget.find('.alexa-input-select');
                 var $sld = $widget.find('.alexa-input-slider');
                 $txt.hide();
+                $selOpt.hide().empty();
                 $sld.hide();
+
+                if (optsRaw) {
+                    try {
+                        var parsed = JSON.parse(optsRaw);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            parsed.forEach(function(item) {
+                                $selOpt.append($('<option></option>').val(item.value).text(item.label));
+                            });
+                            $selOpt.show();
+                            return;
+                        }
+                    } catch (e) {}
+                }
+
                 if (sub === 'message') {
                     $txt.attr('placeholder', ph).show();
                 } else if (sub === 'slider') {
@@ -247,7 +270,16 @@
                 var cmdId = $opt.val();
                 var sub = $opt.attr('data-subtype') || 'other';
                 if (!cmdId) return;
-                if (sub === 'message') {
+                var $selOpt = $widget.find('.alexa-input-select');
+                if ($selOpt.is(':visible')) {
+                    var optVal = $selOpt.val();
+                    if (!optVal) return;
+                    if (sub === 'select') {
+                        jeedom.cmd.execute({id: cmdId, value: {select: optVal}});
+                    } else {
+                        jeedom.cmd.execute({id: cmdId, value: {title: '', message: optVal}});
+                    }
+                } else if (sub === 'message') {
                     var $txt = $widget.find('.alexa-input-text');
                     var text = $txt.val().trim();
                     if (!text) return;

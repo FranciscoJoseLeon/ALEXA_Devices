@@ -509,6 +509,38 @@ class alexa_devices extends eqLogic {
             'routine' => __('Exact Alexa routine name...', __FILE__),
             'set_volume' => __('0 - 100', __FILE__),
         );
+        $soundOptions = array(
+            array('label' => __('Doorbell', __FILE__), 'value' => 'amzn_sfx_doorbell_chime_01'),
+            array('label' => __('Doorbell 2', __FILE__), 'value' => 'amzn_sfx_doorbell_chime_02'),
+            array('label' => __('Bell', __FILE__), 'value' => 'bell_02'),
+            array('label' => __('Church Bell', __FILE__), 'value' => 'amzn_sfx_church_bell_1x_02'),
+            array('label' => __('Siren', __FILE__), 'value' => 'amzn_sfx_siren_01'),
+            array('label' => __('Sci-Fi Alarm', __FILE__), 'value' => 'amzn_sfx_scifi_alarm_01'),
+            array('label' => __('Dog Bark', __FILE__), 'value' => 'amzn_sfx_dog_bark_02'),
+            array('label' => __('Cat Meow', __FILE__), 'value' => 'amzn_sfx_cat_meow_01'),
+            array('label' => __('Applause', __FILE__), 'value' => 'amzn_sfx_crowd_applause_01'),
+            array('label' => __('Christmas', __FILE__), 'value' => 'christmas_01'),
+        );
+        $skillOptions = array(
+            array('label' => 'weather', 'value' => 'weather'),
+            array('label' => 'traffic', 'value' => 'traffic'),
+            array('label' => 'flash_briefing', 'value' => 'flash_briefing'),
+            array('label' => 'time', 'value' => 'time'),
+            array('label' => 'date', 'value' => 'date'),
+            array('label' => 'calendar_today', 'value' => 'calendar_today'),
+            array('label' => 'calendar_tomorrow', 'value' => 'calendar_tomorrow'),
+            array('label' => 'calendar_next', 'value' => 'calendar_next'),
+            array('label' => 'joke', 'value' => 'joke'),
+            array('label' => 'fun_fact', 'value' => 'fun_fact'),
+            array('label' => 'tell_story', 'value' => 'tell_story'),
+            array('label' => 'sing_song', 'value' => 'sing_song'),
+            array('label' => 'good_morning', 'value' => 'good_morning'),
+            array('label' => 'goodnight', 'value' => 'goodnight'),
+            array('label' => 'im_home', 'value' => 'im_home'),
+            array('label' => 'clean_up', 'value' => 'clean_up'),
+            array('label' => 'national_news', 'value' => 'national_news'),
+        );
+
         $cmdOptionsHtml = '';
         $allActions = $this->getCmd('action');
         if (is_array($allActions)) {
@@ -517,7 +549,28 @@ class alexa_devices extends eqLogic {
                 $sub = $actCmd->getSubType();
                 $ph = isset($placeholders[$lid]) ? $placeholders[$lid] : __('Parameter...', __FILE__);
                 $selected = ($lid === 'speak') ? ' selected' : '';
-                $cmdOptionsHtml .= '<option value="' . intval($actCmd->getId()) . '" data-subtype="' . htmlspecialchars($sub) . '" data-logical_id="' . htmlspecialchars($lid) . '" data-placeholder="' . htmlspecialchars($ph) . '"' . $selected . '>' . htmlspecialchars($actCmd->getName()) . '</option>';
+                $optsJson = '';
+                if ($lid === 'sound') {
+                    $optsJson = json_encode($soundOptions, JSON_UNESCAPED_UNICODE);
+                } elseif ($lid === 'info_skill') {
+                    $optsJson = json_encode($skillOptions, JSON_UNESCAPED_UNICODE);
+                } elseif ($lid === 'routine_select' || $lid === 'routine') {
+                    $listVal = $actCmd->getConfiguration('listValue', '');
+                    if (!empty($listVal)) {
+                        $rOpts = array();
+                        foreach (explode(';', $listVal) as $pair) {
+                            $parts = explode('|', $pair, 2);
+                            if (count($parts) === 2 && $parts[0] !== '') {
+                                $rOpts[] = array('label' => $parts[1], 'value' => $parts[0]);
+                            }
+                        }
+                        if (!empty($rOpts)) {
+                            $optsJson = json_encode($rOpts, JSON_UNESCAPED_UNICODE);
+                        }
+                    }
+                }
+                $optsAttr = $optsJson !== '' ? ' data-options="' . htmlspecialchars($optsJson, ENT_QUOTES, 'UTF-8') . '"' : '';
+                $cmdOptionsHtml .= '<option value="' . intval($actCmd->getId()) . '" data-subtype="' . htmlspecialchars($sub) . '" data-logical_id="' . htmlspecialchars($lid) . '" data-placeholder="' . htmlspecialchars($ph) . '"' . $optsAttr . $selected . '>' . htmlspecialchars($actCmd->getName()) . '</option>';
             }
         }
         $replace['#cmd_options#'] = $cmdOptionsHtml;

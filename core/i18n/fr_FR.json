@@ -366,7 +366,13 @@
         "0 - 100": "0 - 100",
         "Parameter...": "Paramètre...",
         "Last command heard by Alexa": "Dernière commande entendue par Alexa",
-        "Stop": "Arrêter"
+        "Stop": "Arrêter",
+        "Doorbell 2": "Sonnette 2",
+        "Church Bell": "Cloche d’église",
+        "Sci-Fi Alarm": "Alarme Sci-Fi",
+        "Dog Bark": "Aboiement",
+        "Cat Meow": "Miaulement",
+        "Applause": "Applaudissements"
     },
     "plugins/alexa_devices/core/ajax/alexa_devices.ajax.php": {
         "401 - Unauthorized access": "401 - Accès non autorisé",
