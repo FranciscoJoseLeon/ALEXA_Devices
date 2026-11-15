@@ -50,7 +50,7 @@ $target_url = '';
 $raw_query = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
 if (preg_match('/(?:^|&)url=(.*)$/s', $raw_query, $m)) {
     $target_url = $m[1];
-    if (preg_match('/^https?%3A/i', $target_url)) {
+    if (strpos($target_url, '&') === false && (preg_match('/^https?%3A/i', $target_url) || strpos($target_url, '%3D') !== false || strpos($target_url, '%26') !== false)) {
         $target_url = rawurldecode($target_url);
     }
 }
