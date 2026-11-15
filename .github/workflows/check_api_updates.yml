@@ -1,0 +1,52 @@
+name: Alexa API & Dependency Watcher
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  check-alexa-api:
+    name: Check Alexa API updates
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check aioamazondevices & Alexa API changes
+        id: checker
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python tools/check_api_updates.py
+
+      - name: Create issue on Alexa API changes
+        if: steps.checker.outputs.changes_detected == 'true'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "🔔 [Alexa API] Cambios detectados en aioamazondevices (${{ steps.checker.outputs.api_version }})"
+          content-filepath: ./tools/last_api_report.md
+          labels: |
+            api-update
+          assignees: ${{ github.repository_owner }}
+
+      - name: Create PR for requirements.txt bump
+        if: steps.checker.outputs.version_changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore(deps): update aioamazondevices to ${{ steps.checker.outputs.api_version }}"
+          title: "⬆️ Actualizar aioamazondevices a ${{ steps.checker.outputs.api_version }}"
+          body: |
+            Se ha detectado una nueva versión de `aioamazondevices` en PyPI/GitHub y se ha actualizado `resources/requirements.txt`.
+          branch: "auto-update-aioamazondevices"
+          base: "main"
