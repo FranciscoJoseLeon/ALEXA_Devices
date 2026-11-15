@@ -1066,6 +1066,9 @@ body, h1, h2, h3, h4, p, label, span, div, a, input, button, .a-text-bold {
 
             elif action == "routine":
                 routine_name = params.get("routine", "")
+                default_serial = params.get("default_serial", "")
+                if default_serial and default_serial in self.devices:
+                    self.api._default_device_serial = default_serial
                 await self.api.call_routine(routine_name)
 
             elif action == "restart":
@@ -1080,6 +1083,43 @@ body, h1, h2, h3, h4, p, label, span, div, a, input, button, .a-text-bold {
             LOGGER.error("Error ejecutando comando %s en %s: %s", action, serial, err)
             return web.json_response({"error": str(err)}, status=500)
 
+    async def handle_routines(self, request: web.Request) -> web.Response:
+        """Devuelve la lista de rutinas de Alexa disponibles en la cuenta."""
+        if not self.is_authenticated or not self.api:
+            return web.json_response({"error": "Demonio no autenticado"}, status=403)
+        return web.json_response({"status": "ok", "routines": list(self.api.routines or [])})
+
+    async def handle_routines_refresh(self, request: web.Request) -> web.Response:
+        """Actualiza desde Amazon la lista de rutinas disponibles."""
+        if not self.is_authenticated or not self.api:
+            return web.json_response({"error": "Demonio no autenticado"}, status=403)
+        try:
+            await self.api.update_routines()
+            return web.json_response({"status": "ok", "routines": list(self.api.routines or [])})
+        except Exception as err:
+            LOGGER.error("Error actualizando rutinas: %s", err)
+            return web.json_response({"error": str(err)}, status=500)
+
+    async def handle_reset_session(self, request: web.Request) -> web.Response:
+        """Limpia la sesión de Amazon guardada en disco y memoria."""
+        try:
+            if self.http2_task and not self.http2_task.done():
+                self.http2_task.cancel()
+            if "session" in self.active_proxy:
+                try:
+                    await self.active_proxy["session"].close()
+                except Exception:
+                    pass
+            self.active_proxy = {}
+            self.is_authenticated = False
+            self.current_user = ""
+            self.devices = {}
+            if os.path.exists(self.session_file):
+                os.remove(self.session_file)
+            return web.json_response({"status": "ok"})
+        except Exception as err:
+            return web.json_response({"error": str(err)}, status=500)
+
     async def start(self):
         """Inicia el servidor HTTP del demonio y los servicios en segundo plano."""
         self.app = web.Application()
@@ -1092,6 +1132,9 @@ body, h1, h2, h3, h4, p, label, span, div, a, input, button, .a-text-bold {
         self.app.router.add_route("*", "/proxy/relay", self.handle_proxy_relay)
         self.app.router.add_get("/api/proxy_status", self.handle_proxy_status)
         self.app.router.add_post("/api/manual_code", self.handle_manual_code)
+        self.app.router.add_get("/api/routines", self.handle_routines)
+        self.app.router.add_post("/api/routines/refresh", self.handle_routines_refresh)
+        self.app.router.add_post("/api/reset_session", self.handle_reset_session)
 
         self.runner = web.AppRunner(self.app)
         await self.runner.setup()

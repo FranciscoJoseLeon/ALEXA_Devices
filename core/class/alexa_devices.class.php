@@ -240,7 +240,81 @@ class alexa_devices extends eqLogic {
 
     public static function syncDevices() {
         $res = self::callDaemon('/api/sync', array(), 'POST');
+        try {
+            self::syncRoutines(false);
+        } catch (Exception $e) {
+            log::add('alexa_devices', 'debug', 'No se pudieron sincronizar rutinas automáticamente: ' . $e->getMessage());
+        }
         return $res;
+    }
+
+    public static function isSleepModeActive() {
+        if (config::byKey('sleep_protection_enabled', 'alexa_devices', 0) != 1) {
+            return false;
+        }
+        $start = intval(config::byKey('sleep_start_hour', 'alexa_devices', 22));
+        $end = intval(config::byKey('sleep_end_hour', 'alexa_devices', 7));
+        $now = intval(date('G'));
+        if ($start == $end) {
+            return false;
+        }
+        if ($start < $end) {
+            return ($now >= $start && $now < $end);
+        }
+        return ($now >= $start || $now < $end);
+    }
+
+    public static function syncRoutines($forceRefresh = true) {
+        $endpoint = $forceRefresh ? '/api/routines/refresh' : '/api/routines';
+        $method = $forceRefresh ? 'POST' : 'GET';
+        $res = self::callDaemon($endpoint, array(), $method);
+        $routines = isset($res['routines']) && is_array($res['routines']) ? $res['routines'] : array();
+        sort($routines, SORT_NATURAL | SORT_FLAG_CASE);
+        config::save('routines_list', json_encode($routines), 'alexa_devices');
+        config::save('routines_updated_at', date('Y-m-d H:i:s'), 'alexa_devices');
+
+        $listParts = array();
+        foreach ($routines as $r) {
+            $safe = str_replace(array(';', '|'), ' ', $r);
+            $listParts[] = $safe . '|' . $safe;
+        }
+        $listValue = implode(';', $listParts);
+        foreach (self::byType('alexa_devices') as $eqLogic) {
+            $cmd = $eqLogic->getCmd(null, 'routine_select');
+            if (is_object($cmd)) {
+                $cmd->setConfiguration('listValue', $listValue);
+                $cmd->save();
+            }
+        }
+        return $routines;
+    }
+
+    public static function reloadAllCommands() {
+        $count = 0;
+        foreach (self::byType('alexa_devices') as $eqLogic) {
+            $eqLogic->createDefaultCommands();
+            $count++;
+        }
+        return $count;
+    }
+
+    public static function deleteAllAndRescan() {
+        foreach (self::byType('alexa_devices') as $eqLogic) {
+            $eqLogic->remove();
+        }
+        return self::syncDevices();
+    }
+
+    public static function resetAmazonSession() {
+        try {
+            self::callDaemon('/api/reset_session', array(), 'POST');
+        } catch (Exception $e) {
+            $sessionFile = dirname(__FILE__) . '/../../resources/data/storage/daemon_session.json';
+            if (file_exists($sessionFile)) {
+                @unlink($sessionFile);
+            }
+        }
+        return true;
     }
 
     public static function createOrUpdateDevice($device) {
@@ -254,6 +328,10 @@ class alexa_devices extends eqLogic {
             $eqLogic->setEqType_name('alexa_devices');
             $eqLogic->setIsEnable(1);
             $eqLogic->setIsVisible(1);
+            $defaultObj = config::byKey('default_object_id', 'alexa_devices', '');
+            if (!empty($defaultObj) && is_object(jeeObject::byId($defaultObj))) {
+                $eqLogic->setObject_id($defaultObj);
+            }
         }
 
         $eqLogic->setName($name);
@@ -395,8 +473,23 @@ class alexa_devices extends eqLogic {
             $infoCmd->save();
         }
 
-        // 16. Action: Run Alexa routine
+        // 16. Action: Run Alexa routine (text)
         $this->getOrCreateCmd('routine', 'action', 'message', __('Run Routine', __FILE__), false);
+
+        // 17. Action: Run Alexa routine (dropdown list)
+        $routineSelectCmd = $this->getOrCreateCmd('routine_select', 'action', 'select', __('Run Routine (List)', __FILE__), false);
+        if (is_object($routineSelectCmd)) {
+            $routines = json_decode(config::byKey('routines_list', 'alexa_devices', '[]'), true);
+            if (is_array($routines) && !empty($routines)) {
+                $parts = array();
+                foreach ($routines as $r) {
+                    $safe = str_replace(array(';', '|'), ' ', $r);
+                    $parts[] = $safe . '|' . $safe;
+                }
+                $routineSelectCmd->setConfiguration('listValue', implode(';', $parts));
+                $routineSelectCmd->save();
+            }
+        }
     }
 
     private function getOrCreateCmd($logicalId, $type, $subType, $name, $isVisible = true, $template = null) {
@@ -432,6 +525,17 @@ class alexa_devicesCmd extends cmd {
 
         log::add('alexa_devices', 'debug', "Ejecutando comando {$logicalId} en dispositivo {$serial}");
 
+        if (alexa_devices::isSleepModeActive()) {
+            if ($logicalId === 'speak' || $logicalId === 'announcement') {
+                log::add('alexa_devices', 'info', "Silencio nocturno activo: comando {$logicalId} bloqueado en {$serial}");
+                return;
+            }
+            if ($logicalId === 'whisper' && config::byKey('sleep_allow_whisper', 'alexa_devices', 1) != 1) {
+                log::add('alexa_devices', 'info', "Silencio nocturno activo: susurro bloqueado en {$serial}");
+                return;
+            }
+        }
+
         $action = '';
         $params = array();
 
@@ -465,7 +569,15 @@ class alexa_devicesCmd extends cmd {
 
             case 'set_volume':
                 $action = 'set_volume';
-                $params['volume'] = isset($options['slider']) ? intval($options['slider']) : 50;
+                $vol = isset($options['slider']) ? intval($options['slider']) : 50;
+                if (alexa_devices::isSleepModeActive()) {
+                    $maxSleepVol = intval(config::byKey('sleep_max_volume', 'alexa_devices', 0));
+                    if ($maxSleepVol > 0 && $vol > $maxSleepVol) {
+                        log::add('alexa_devices', 'info', "Silencio nocturno: volumen limitado de {$vol}% a {$maxSleepVol}%");
+                        $vol = $maxSleepVol;
+                    }
+                }
+                $params['volume'] = $vol;
                 break;
 
             case 'play':
@@ -518,6 +630,19 @@ class alexa_devicesCmd extends cmd {
             case 'routine':
                 $action = 'routine';
                 $params['routine'] = isset($options['message']) ? trim($options['message']) : '';
+                $defaultSerial = config::byKey('default_device_serial', 'alexa_devices', '');
+                if (!empty($defaultSerial)) {
+                    $params['default_serial'] = $defaultSerial;
+                }
+                break;
+
+            case 'routine_select':
+                $action = 'routine';
+                $params['routine'] = isset($options['select']) ? trim($options['select']) : '';
+                $defaultSerial = config::byKey('default_device_serial', 'alexa_devices', '');
+                if (!empty($defaultSerial)) {
+                    $params['default_serial'] = $defaultSerial;
+                }
                 break;
 
             default:

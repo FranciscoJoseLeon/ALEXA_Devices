@@ -19,6 +19,16 @@ $daemon_info = alexa_devices::deamon_info();
 $daemon_ok = (isset($daemon_info['state']) && $daemon_info['state'] == 'ok');
 $deps_ok = (isset($dep_info['state']) && $dep_info['state'] == 'ok');
 
+$jeeObjects = jeeObject::all();
+$alexaDevices = eqLogic::byType('alexa_devices');
+$routinesJson = config::byKey('routines_list', 'alexa_devices', '[]');
+$routinesList = json_decode($routinesJson, true);
+if (!is_array($routinesList)) {
+    $routinesList = array();
+}
+$routinesUpdatedAt = config::byKey('routines_updated_at', 'alexa_devices', '');
+$sleepAllowWhisper = config::byKey('sleep_allow_whisper', 'alexa_devices', 1);
+
 // Pays Amazon : valeur enregistrée, sinon déduite de la langue de Jeedom.
 $current_domain = config::byKey('amazon_domain', 'alexa_devices', '');
 if (empty($current_domain)) {
@@ -111,6 +121,122 @@ cache::set('alexa_devices_auth_token', $auth_token, 1800);
                             <button class="btn btn-primary" type="button" id="btn_alexa_manual"><i class="fas fa-check"></i> {{Validate}}</button>
                         </span>
                     </div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend><i class="fas fa-moon"></i> {{Sleep protection / Night silence}}</legend>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{{Enable night silence}}</label>
+            <div class="col-sm-1">
+                <input type="checkbox" class="configKey" data-l1key="sleep_protection_enabled" />
+            </div>
+            <div class="col-sm-8 help-block">{{Blocks spoken announcements (Speak, Whisper, Announcement, SSML) during the night schedule.}}</div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{{Start hour (default: 22)}}</label>
+            <div class="col-sm-2">
+                <input type="number" min="0" max="23" class="configKey form-control" data-l1key="sleep_start_hour" placeholder="22" />
+            </div>
+            <label class="col-sm-2 control-label">{{End hour (default: 7)}}</label>
+            <div class="col-sm-2">
+                <input type="number" min="0" max="23" class="configKey form-control" data-l1key="sleep_end_hour" placeholder="7" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{{Allow whisper during night}}</label>
+            <div class="col-sm-1">
+                <input type="checkbox" class="configKey" data-l1key="sleep_allow_whisper" <?php echo ($sleepAllowWhisper ? 'checked' : ''); ?> />
+            </div>
+            <div class="col-sm-8 help-block">{{If enabled, the Whisper command still speaks softly during night hours.}}</div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{{Max night volume (0 = disabled)}}</label>
+            <div class="col-sm-2">
+                <input type="number" min="0" max="100" class="configKey form-control" data-l1key="sleep_max_volume" placeholder="0" />
+            </div>
+            <div class="col-sm-7 help-block">{{Caps any Set Volume command above this value during night hours (0 = no limit).}}</div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend><i class="fas fa-sliders-h"></i> {{Devices &amp; Amazon Routines}}</legend>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{{Default object for new devices}}</label>
+            <div class="col-sm-4">
+                <select class="configKey form-control" data-l1key="default_object_id">
+                    <option value="">{{None}}</option>
+                    <?php foreach ($jeeObjects as $obj) { ?>
+                        <option value="<?php echo $obj->getId(); ?>"><?php echo htmlspecialchars($obj->getName(), ENT_QUOTES, 'UTF-8'); ?></option>
+                    <?php } ?>
+                </select>
+            </div>
+            <div class="col-sm-5 help-block">{{Automatically assigns newly discovered Echo devices to this Jeedom object.}}</div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{{Default Echo device}}</label>
+            <div class="col-sm-4">
+                <select class="configKey form-control" data-l1key="default_device_serial">
+                    <option value="">{{None}}</option>
+                    <?php foreach ($alexaDevices as $eq) { ?>
+                        <option value="<?php echo htmlspecialchars($eq->getLogicalId(), ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($eq->getHumanName(), ENT_QUOTES, 'UTF-8'); ?></option>
+                    <?php } ?>
+                </select>
+            </div>
+            <div class="col-sm-5 help-block">{{Used when running Amazon routines or global actions without specifying a device.}}</div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{{Amazon Routines list}}</label>
+            <div class="col-sm-4">
+                <select id="alexa_routines_preview" class="form-control">
+                    <?php if (empty($routinesList)) { ?>
+                        <option value="">{{None}}</option>
+                    <?php } else { ?>
+                        <?php foreach ($routinesList as $rName) { ?>
+                            <option value="<?php echo htmlspecialchars($rName, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($rName, ENT_QUOTES, 'UTF-8'); ?></option>
+                        <?php } ?>
+                    <?php } ?>
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="btn btn-success" id="btn_refresh_routines"><i class="fas fa-sync-alt"></i> {{Refresh routines}}</button>
+            </div>
+            <div class="col-sm-3 help-block" id="alexa_routines_updated">
+                <?php echo $routinesUpdatedAt ? '{{Last updated}}: ' . htmlspecialchars($routinesUpdatedAt, ENT_QUOTES, 'UTF-8') : '{{Not yet synchronized}}'; ?>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend><i class="fas fa-tools"></i> {{Maintenance &amp; Repair}}</legend>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{{Reload default commands}}</label>
+            <div class="col-sm-3">
+                <button type="button" class="btn btn-warning" id="btn_reload_commands"><i class="fas fa-redo"></i> {{Reload commands}}</button>
+            </div>
+            <div class="col-sm-6 help-block">{{Adds any missing default commands on all existing Alexa devices without deleting your scenarios.}}</div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{{Delete all devices and rescan}}</label>
+            <div class="col-sm-3">
+                <button type="button" class="btn btn-danger" id="btn_delete_rescan"><i class="fas fa-trash-alt"></i> {{Delete &amp; Rescan}}</button>
+            </div>
+            <div class="col-sm-6 help-block">{{Removes all Alexa devices from Jeedom and runs a clean discovery from Amazon.}}</div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{{Reset Amazon session}}</label>
+            <div class="col-sm-3">
+                <button type="button" class="btn btn-danger" id="btn_reset_session"><i class="fas fa-sign-out-alt"></i> {{Reset session}}</button>
+            </div>
+            <div class="col-sm-6 help-block">{{Clears saved Amazon cookies/tokens so you can sign in cleanly from scratch.}}</div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-9 col-sm-offset-3">
+                <div class="alert alert-info" style="margin-bottom:0;">
+                    <i class="fas fa-info-circle"></i>
+                    {{This plugin runs on a lightweight Python daemon (aiohttp + aioamazondevices) and does not require Node.js. If the daemon has dependency issues, use the "Relaunch" button in the Dependencies box above.}}
                 </div>
             </div>
         </div>
@@ -254,6 +380,82 @@ cache::set('alexa_devices_auth_token', $auth_token, 1800);
     $('#btn_generate_token').on('click', function () {
         var token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         $('.configKey[data-l1key=daemon_token]').val(token);
+    });
+
+    $('#btn_refresh_routines').on('click', function () {
+        var $btn = $(this).prop('disabled', true);
+        $.ajax({
+            type: 'POST', url: ajaxUrl, data: { action: 'refreshRoutines' }, dataType: 'json',
+            complete: function () { $btn.prop('disabled', false); },
+            success: function (data) {
+                if (data.state !== 'ok') {
+                    notify({ message: data.result || '{{Error refreshing routines}}', level: 'danger' });
+                    return;
+                }
+                var routines = (data.result && data.result.routines) ? data.result.routines : [];
+                var $sel = $('#alexa_routines_preview').empty();
+                if (!routines.length) {
+                    $sel.append($('<option>').val('').text('{{None}}'));
+                } else {
+                    $.each(routines, function (_, name) {
+                        $sel.append($('<option>').val(name).text(name));
+                    });
+                }
+                if (data.result && data.result.updated_at) {
+                    $('#alexa_routines_updated').text('{{Last updated}}: ' + data.result.updated_at);
+                }
+                notify({ message: '{{Routines synchronized}}: ' + routines.length, level: 'success' });
+            }
+        });
+    });
+
+    $('#btn_reload_commands').on('click', function () {
+        var $btn = $(this).prop('disabled', true);
+        $.ajax({
+            type: 'POST', url: ajaxUrl, data: { action: 'reloadAllCommands' }, dataType: 'json',
+            complete: function () { $btn.prop('disabled', false); },
+            success: function (data) {
+                if (data.state !== 'ok') {
+                    notify({ message: data.result || '{{Error reloading commands}}', level: 'danger' });
+                    return;
+                }
+                var count = (data.result && data.result.count !== undefined) ? data.result.count : 0;
+                notify({ message: '{{Default commands reloaded on devices}}: ' + count, level: 'success' });
+            }
+        });
+    });
+
+    $('#btn_delete_rescan').on('click', function () {
+        if (!confirm('{{Are you sure you want to delete all Alexa devices and rescan from Amazon?}}')) return;
+        var $btn = $(this).prop('disabled', true);
+        $.ajax({
+            type: 'POST', url: ajaxUrl, data: { action: 'deleteAllAndRescan' }, dataType: 'json',
+            complete: function () { $btn.prop('disabled', false); },
+            success: function (data) {
+                if (data.state !== 'ok') {
+                    notify({ message: data.result || '{{Error rescanning devices}}', level: 'danger' });
+                    return;
+                }
+                notify({ message: '{{All devices deleted and rescan completed.}}', level: 'success' });
+            }
+        });
+    });
+
+    $('#btn_reset_session').on('click', function () {
+        if (!confirm('{{Are you sure you want to clear the saved Amazon session? You will need to sign in again.}}')) return;
+        var $btn = $(this).prop('disabled', true);
+        $.ajax({
+            type: 'POST', url: ajaxUrl, data: { action: 'resetAmazonSession' }, dataType: 'json',
+            complete: function () { $btn.prop('disabled', false); },
+            success: function (data) {
+                if (data.state !== 'ok') {
+                    notify({ message: data.result || '{{Error resetting session}}', level: 'danger' });
+                    return;
+                }
+                setStatus('disconnected');
+                notify({ message: '{{Amazon session cleared. You can now sign in again.}}', level: 'success' });
+            }
+        });
     });
 
     if (daemonOk) { checkStatus(); } else { setStatus('nodaemon'); }

@@ -102,6 +102,45 @@ try {
         }
     }
 
+    if ($action == 'refreshRoutines') {
+        try {
+            $routines = alexa_devices::syncRoutines(true);
+            ajax::success(array(
+                'routines' => $routines,
+                'updated_at' => config::byKey('routines_updated_at', 'alexa_devices', ''),
+            ));
+        } catch (Exception $e) {
+            ajax::error($e->getMessage());
+        }
+    }
+
+    if ($action == 'reloadAllCommands') {
+        try {
+            $count = alexa_devices::reloadAllCommands();
+            ajax::success(array('count' => $count));
+        } catch (Exception $e) {
+            ajax::error($e->getMessage());
+        }
+    }
+
+    if ($action == 'deleteAllAndRescan') {
+        try {
+            $res = alexa_devices::deleteAllAndRescan();
+            ajax::success($res);
+        } catch (Exception $e) {
+            ajax::error($e->getMessage());
+        }
+    }
+
+    if ($action == 'resetAmazonSession') {
+        try {
+            alexa_devices::resetAmazonSession();
+            ajax::success(true);
+        } catch (Exception $e) {
+            ajax::error($e->getMessage());
+        }
+    }
+
     throw new Exception(__('No valid action provided.', __FILE__));
 
 } catch (Exception $e) {
