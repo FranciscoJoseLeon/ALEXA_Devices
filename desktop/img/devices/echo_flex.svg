@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <defs>
+    <linearGradient id="alexaRing" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00CAFA"/>
+      <stop offset="50%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+    <radialGradient id="sphereDark" cx="38%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#4B5563"/>
+      <stop offset="55%" stop-color="#27272A"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </radialGradient>
+    <radialGradient id="sphereCharcoal" cx="38%" cy="28%" r="68%">
+      <stop offset="0%" stop-color="#64748B"/>
+      <stop offset="55%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </radialGradient>
+    <linearGradient id="cylDark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1F2937"/>
+      <stop offset="35%" stop-color="#4B5563"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="screenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+  </defs>
+  <rect x="30" y="18" width="36" height="54" rx="6" fill="#E2E8F0" stroke="#94A3B8" stroke-width="1.5"/>
+  <rect x="33" y="45" width="30" height="22" rx="3" fill="#CBD5E1"/>
+  <circle cx="48" cy="34" r="3.5" fill="url(#alexaRing)"/>
+  <rect x="43" y="72" width="10" height="7" rx="1" fill="#64748B"/>
+</svg>

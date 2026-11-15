@@ -24,8 +24,8 @@
 }
 
 .alexa-card-icon-wrapper {
-    width: 60px;
-    height: 60px;
+    width: 76px;
+    height: 76px;
     border-radius: 50%;
     background: rgba(0, 202, 250, 0.1);
     display: flex;
@@ -46,15 +46,34 @@
     display: block;
 }
 
+.alexa-device-img {
+    width: 68px;
+    height: 68px;
+    object-fit: contain;
+    display: block;
+}
+
 .alexa-device-card .name {
     font-weight: 600;
     font-size: 13px;
-    max-width: 140px;
+    max-width: 144px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 3px;
+    color: var(--txt-color, #2d3748);
+}
+
+.alexa-card-model {
+    font-size: 11px;
+    line-height: 1.2;
+    max-width: 144px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     margin-bottom: 6px;
-    color: var(--txt-color, #2d3748);
+    color: #0284c7;
+    font-weight: 500;
 }
 
 .alexa-card-badges {

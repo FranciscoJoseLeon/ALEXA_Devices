@@ -255,19 +255,10 @@ class AlexaDaemon:
             except Exception:
                 pass
 
-            devs_summary = {}
-            for serial, dev in self.devices.items():
-                devs_summary[serial] = {
-                    "serial_number": dev.serial_number,
-                    "account_name": dev.account_name,
-                    "device_family": dev.device_family,
-                    "device_type": dev.device_type,
-                    "online": dev.online,
-                    "media_player_supported": dev.media_player_supported,
-                    "notifications_supported": dev.notifications_supported,
-                    "voice_control_supported": dev.voice_control_supported,
-                    "software_version": dev.software_version,
-                }
+            devs_summary = {
+                serial: self._serialize_device(dev)
+                for serial, dev in self.devices.items()
+            }
 
             LOGGER.info("Sincronizados %d dispositivos Alexa.", len(self.devices))
             # Notificar a Jeedom de la lista de dispositivos
@@ -367,19 +358,27 @@ class AlexaDaemon:
             LOGGER.exception("Error inesperado durante el login: %s", err)
             return web.json_response({"error": str(err)}, status=500)
 
+    @staticmethod
+    def _serialize_device(dev) -> dict:
+        return {
+            "serial_number": dev.serial_number,
+            "account_name": dev.account_name,
+            "device_family": dev.device_family,
+            "device_type": dev.device_type,
+            "primary_display_category": getattr(dev, "primary_display_category", "") or "",
+            "manufacturer": getattr(dev, "manufacturer", None) or "",
+            "model": getattr(dev, "model", None) or "",
+            "hardware_version": getattr(dev, "hardware_version", None) or "",
+            "online": dev.online,
+            "media_player_supported": dev.media_player_supported,
+            "notifications_supported": dev.notifications_supported,
+            "voice_control_supported": dev.voice_control_supported,
+            "software_version": dev.software_version,
+        }
+
     async def handle_devices(self, request: web.Request) -> web.Response:
         summary = {
-            serial: {
-                "serial_number": dev.serial_number,
-                "account_name": dev.account_name,
-                "device_family": dev.device_family,
-                "device_type": dev.device_type,
-                "online": dev.online,
-                "media_player_supported": dev.media_player_supported,
-                "notifications_supported": dev.notifications_supported,
-                "voice_control_supported": dev.voice_control_supported,
-                "software_version": dev.software_version,
-            }
+            serial: self._serialize_device(dev)
             for serial, dev in self.devices.items()
         }
         return web.json_response({"devices": summary})

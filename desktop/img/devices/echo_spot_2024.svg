@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <defs>
+    <linearGradient id="alexaRing" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00CAFA"/>
+      <stop offset="50%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+    <radialGradient id="sphereDark" cx="38%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#4B5563"/>
+      <stop offset="55%" stop-color="#27272A"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </radialGradient>
+    <radialGradient id="sphereCharcoal" cx="38%" cy="28%" r="68%">
+      <stop offset="0%" stop-color="#64748B"/>
+      <stop offset="55%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </radialGradient>
+    <linearGradient id="cylDark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1F2937"/>
+      <stop offset="35%" stop-color="#4B5563"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="screenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="48" cy="77" rx="26" ry="6.5" fill="#00CAFA" opacity="0.28"/>
+  <path d="M21 50 a27 27 0 0 1 54 0 v13 c0 7-12 12-27 12 s-27-5-27-12 z" fill="url(#sphereDark)"/>
+  <path d="M26 49 a22 22 0 0 1 44 0 z" fill="url(#screenGrad)" stroke="#38BDF8" stroke-width="1.5"/>
+  <text x="48" y="44" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="11" fill="#FFFFFF">10:45</text>
+  <path d="M24 55 c7 3 15 4.5 24 4.5 s17-1.5 24-4.5" fill="none" stroke="#64748B" stroke-width="1" stroke-dasharray="2 2"/>
+  <path d="M27 69 c6 3.5 13 5 21 5 s15-1.5 21-5" fill="none" stroke="url(#alexaRing)" stroke-width="3" stroke-linecap="round"/>
+</svg>

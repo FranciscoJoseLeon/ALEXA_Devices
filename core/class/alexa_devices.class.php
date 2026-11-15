@@ -335,9 +335,13 @@ class alexa_devices extends eqLogic {
         }
 
         $eqLogic->setName($name);
-        $eqLogic->setConfiguration('device_family', $device['device_family']);
-        $eqLogic->setConfiguration('device_type', $device['device_type']);
-        $eqLogic->setConfiguration('software_version', $device['software_version']);
+        $eqLogic->setConfiguration('device_family', isset($device['device_family']) ? $device['device_family'] : '');
+        $eqLogic->setConfiguration('device_type', isset($device['device_type']) ? $device['device_type'] : '');
+        $eqLogic->setConfiguration('software_version', isset($device['software_version']) ? $device['software_version'] : '');
+        $eqLogic->setConfiguration('model', isset($device['model']) ? $device['model'] : '');
+        $eqLogic->setConfiguration('hardware_version', isset($device['hardware_version']) ? $device['hardware_version'] : '');
+        $eqLogic->setConfiguration('manufacturer', isset($device['manufacturer']) ? $device['manufacturer'] : '');
+        $eqLogic->setConfiguration('primary_display_category', isset($device['primary_display_category']) ? $device['primary_display_category'] : '');
         $eqLogic->save();
 
         // Crear/actualizar comandos por defecto para este dispositivo Echo
@@ -349,6 +353,92 @@ class alexa_devices extends eqLogic {
         }
 
         return $eqLogic;
+    }
+
+    /**
+     * Resolves a distinct SVG image path and human-readable model/generation label for an eqLogic.
+     */
+    public static function resolveDeviceVisual($eqLogic) {
+        $family = strtoupper((string)$eqLogic->getConfiguration('device_family', 'ECHO'));
+        $type = strtoupper((string)$eqLogic->getConfiguration('device_type', ''));
+        $model = trim((string)$eqLogic->getConfiguration('model', ''));
+        $hw = trim((string)$eqLogic->getConfiguration('hardware_version', ''));
+        $mfg = trim((string)$eqLogic->getConfiguration('manufacturer', ''));
+        $name = (string)$eqLogic->getName();
+
+        $mLow = strtolower($model);
+        $hwLow = strtolower($hw);
+        $base = 'plugins/alexa_devices/desktop/img/devices/';
+
+        // Determinar imagen exacta según modelo, generación y tipo
+        if ($family === 'WHA' || in_array($type, array('A3C9PE6TNYLTCH', 'AP1F6KUH00XPV'), true) || strpos($mLow, 'speaker group') !== false || strpos($mLow, 'stereo pair') !== false) {
+            $file = 'speaker_group.svg';
+        } elseif (strpos($family, 'FIRE_TV') !== false || strpos($mLow, 'fire tv') !== false || strpos($mLow, 'cube') !== false) {
+            $file = 'fire_tv.svg';
+        } elseif (strpos($family, 'VIDEO') !== false || strpos($mLow, 'tv') !== false || (!empty($mfg) && strcasecmp($mfg, 'Amazon') !== 0 && preg_match('/tv|qled|oled/i', $name))) {
+            $file = 'smart_tv.svg';
+        } elseif (strpos($mLow, 'spot') !== false || in_array($type, array('A3EH2E0YZ30OD6', 'A10A33FOX2NUBK'), true) || stripos($name, 'Spot') !== false) {
+            $file = ($type === 'A10A33FOX2NUBK' || strpos($hwLow, '1st') !== false) ? 'echo_spot_gen1.svg' : 'echo_spot_2024.svg';
+        } elseif (strpos($mLow, 'show') !== false || strpos($family, 'KNIGHT') !== false || stripos($name, 'Show') !== false) {
+            if (strpos($mLow, '15') !== false || strpos($mLow, '21') !== false) {
+                $file = 'echo_show_15.svg';
+            } elseif (strpos($mLow, '10') !== false) {
+                $file = 'echo_show_10.svg';
+            } else {
+                $file = 'echo_show_compact.svg';
+            }
+        } elseif (strpos($mLow, 'pop') !== false || preg_match('/\bpop\b/i', $name)) {
+            $file = 'echo_pop.svg';
+        } elseif (strpos($mLow, 'dot') !== false || in_array($type, array('A2U21SRK4QGSE1', 'A32DOYMUN6DTXA', 'A3S5BH2HU6VAYF', 'A2M35JJZWCQOMZ'), true)) {
+            if (strpos($mLow, 'clock') !== false || stripos($name, 'clock') !== false || stripos($name, 'reloj') !== false) {
+                $file = 'echo_dot_clock.svg';
+            } elseif (strpos($hwLow, '1st') !== false || strpos($hwLow, '2nd') !== false || $type === 'A3S5BH2HU6VAYF') {
+                $file = 'echo_dot_gen1_2.svg';
+            } elseif (strpos($hwLow, '3rd') !== false || $type === 'A32DOYMUN6DTXA') {
+                $file = 'echo_dot_gen3.svg';
+            } else {
+                $file = 'echo_dot_gen4_5.svg';
+            }
+        } elseif (strpos($mLow, 'studio') !== false) {
+            $file = 'echo_studio.svg';
+        } elseif (strpos($mLow, 'flex') !== false) {
+            $file = 'echo_flex.svg';
+        } elseif (strpos($mLow, 'auto') !== false) {
+            $file = 'echo_auto.svg';
+        } elseif ($mLow === 'echo' || strpos($mLow, 'echo plus') !== false || in_array($type, array('A3RMGO6LYLH7YN', 'A3FX4UWTP28V1P'), true)) {
+            if (strpos($hwLow, '1st') !== false || strpos($hwLow, '2nd') !== false) {
+                $file = 'echo_gen1_2.svg';
+            } elseif (strpos($hwLow, '3rd') !== false || $type === 'A3FX4UWTP28V1P') {
+                $file = 'echo_gen3.svg';
+            } else {
+                $file = 'echo_gen4.svg';
+            }
+        } elseif (strpos($family, 'VOX') !== false || strpos($family, 'MOBILE') !== false) {
+            $file = 'mobile_app.svg';
+        } else {
+            $file = 'echo_generic.svg';
+        }
+
+        // Etiqueta legible con modelo y generación
+        if (!empty($model)) {
+            if ($type === 'A3EH2E0YZ30OD6' && empty($hw)) {
+                $label = 'Echo Spot (2024)';
+            } elseif (!empty($hw)) {
+                $label = $model . ' (' . $hw . ')';
+            } elseif (!empty($mfg) && strcasecmp($mfg, 'Amazon') !== 0) {
+                $shortMfg = preg_replace('/\s+Electronics$/i', '', $mfg);
+                $label = $shortMfg . ' · ' . $model;
+            } else {
+                $label = $model;
+            }
+        } else {
+            $label = $family ?: $type;
+        }
+
+        return array(
+            'image' => $base . $file,
+            'label' => $label,
+        );
     }
 
     public function toHtml($_version = 'dashboard') {

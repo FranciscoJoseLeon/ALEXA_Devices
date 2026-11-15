@@ -142,7 +142,10 @@
         "Info Skill": "Skill de Información",
         "Select Weather, Traffic, News, Time, Joke, Good Morning, Good Night, etc.": "Selecciona El tiempo, Tráfico, Noticias, Hora, Chiste, Buenos días, Buenas noches, etc.",
         "Run Routine": "Ejecutar Rutina",
-        "Enter the exact name of your Alexa routine as configured in the Alexa app.": "Introduce el nombre exacto de tu rutina de Alexa tal como aparece en la app de Alexa."
+        "Enter the exact name of your Alexa routine as configured in the Alexa app.": "Introduce el nombre exacto de tu rutina de Alexa tal como aparece en la app de Alexa.",
+        "Model": "Modelo",
+        "Hardware / Generation": "Hardware / Generación",
+        "Manufacturer": "Fabricante"
     },
     "plugins/alexa_devices/desktop/js/alexa_devices.js": {
         "Devices synchronized successfully": "Dispositivos sincronizados con éxito",
