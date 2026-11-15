@@ -1010,7 +1010,18 @@ body, h1, h2, h3, h4, p, label, span, div, a, input, button, .a-text-bold {
                     re.IGNORECASE,
                 ):
                     text = f"<speak>{stripped}</speak>"
-                await self.api.call_alexa_speak(device, text)
+                members = [
+                    self.devices[m]
+                    for m in (getattr(device, "device_cluster_members", None) or [])
+                    if m in self.devices and m != device.serial_number
+                ]
+                if getattr(device, "device_family", "") == "WHA" and members:
+                    await asyncio.gather(
+                        *(self.api.call_alexa_speak(m_dev, text) for m_dev in members),
+                        return_exceptions=True,
+                    )
+                else:
+                    await self.api.call_alexa_speak(device, text)
 
             elif action == "announcement":
                 text = params.get("text", "")
@@ -1040,7 +1051,15 @@ body, h1, h2, h3, h4, p, label, span, div, a, input, button, .a-text-bold {
                 media_enum = media_map.get(cmd)
                 if media_enum is None:
                     return web.json_response({"error": f"Comando multimedia desconocido: {cmd}"}, status=400)
-                await self.api.send_media_command(device, media_enum)
+                try:
+                    await self.api.send_media_command(device, media_enum)
+                except Exception as media_err:
+                    if "Not Found" in str(media_err):
+                        return web.json_response(
+                            {"error": "No hay reproducción multimedia activa para controlar en este dispositivo/grupo. Usa 'Reproducir música' o 'Comando de texto' para iniciar música."},
+                            status=400,
+                        )
+                    raise
 
             elif action == "dnd":
                 enable = bool(params.get("enable", True))
