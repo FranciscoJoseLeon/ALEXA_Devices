@@ -552,7 +552,8 @@ class AlexaDaemon:
         }
 
         LOGGER.info("Sesión de proxy oficial Amazon iniciada para dominio %s (host %s)", domain, amazon_host)
-        redirect_url = f"{proxy_base}?url={urllib.parse.quote(oauth_url, safe='')}"
+        sep = "&" if "?" in proxy_base else "?"
+        redirect_url = f"{proxy_base}{sep}url={urllib.parse.quote(oauth_url, safe='')}"
         raise web.HTTPFound(redirect_url)
 
     async def handle_proxy_relay(self, request: web.Request) -> web.Response:
@@ -637,7 +638,8 @@ class AlexaDaemon:
                     if location:
                         if location.startswith("/"):
                             location = f"https://{amazon_host}" + location
-                        rewritten_loc = f"{proxy_base}?url={urllib.parse.quote(location, safe='')}"
+                        sep = "&" if "?" in proxy_base else "?"
+                        rewritten_loc = f"{proxy_base}{sep}url={urllib.parse.quote(location, safe='')}"
                         resp_headers["Location"] = rewritten_loc
                         return web.Response(status=resp_status, headers=resp_headers)
 
@@ -677,19 +679,21 @@ class AlexaDaemon:
 
     def _rewrite_amazon_html(self, html: str, amazon_host: str, proxy_base: str) -> str:
         """Adapta enlaces y formularios en el HTML de Amazon para canalizarlos por el proxy."""
-        html = html.replace(f'action="https://{amazon_host}/', f'action="{proxy_base}?url=https://{amazon_host}/')
-        html = html.replace(f"action='https://{amazon_host}/", f"action='{proxy_base}?url=https://{amazon_host}/")
-        html = html.replace('action="/', f'action="{proxy_base}?url=https://{amazon_host}/')
-        html = html.replace("action='/", f"action='{proxy_base}?url=https://{amazon_host}/")
+        sep = "&" if "?" in proxy_base else "?"
+        html = html.replace(f'action="https://{amazon_host}/', f'action="{proxy_base}{sep}url=https://{amazon_host}/')
+        html = html.replace(f"action='https://{amazon_host}/", f"action='{proxy_base}{sep}url=https://{amazon_host}/")
+        html = html.replace('action="/', f'action="{proxy_base}{sep}url=https://{amazon_host}/')
+        html = html.replace("action='/", f"action='{proxy_base}{sep}url=https://{amazon_host}/")
 
-        html = html.replace('href="/ap/', f'href="{proxy_base}?url=https://{amazon_host}/ap/')
-        html = html.replace(f'href="https://{amazon_host}/ap/', f'href="{proxy_base}?url=https://{amazon_host}/ap/')
+        html = html.replace('href="/ap/', f'href="{proxy_base}{sep}url=https://{amazon_host}/ap/')
+        html = html.replace(f'href="https://{amazon_host}/ap/', f'href="{proxy_base}{sep}url=https://{amazon_host}/ap/')
 
         helper_script = f"""
 <script>
 (function() {{
     var pBase = "{proxy_base}";
     var aHost = "{amazon_host}";
+    var sep = pBase.indexOf('?') !== -1 ? '&' : '?';
     document.addEventListener("submit", function(e) {{
         var f = e.target;
         if (f && f.action && f.action.indexOf("proxy.php") === -1 && f.action.indexOf("proxy/relay") === -1) {{
@@ -697,7 +701,7 @@ class AlexaDaemon:
             if (fullUrl.indexOf("http") !== 0) {{
                 fullUrl = "https://" + aHost + (fullUrl.charAt(0) === "/" ? "" : "/") + fullUrl;
             }}
-            f.action = pBase + "?url=" + encodeURIComponent(fullUrl);
+            f.action = pBase + sep + "url=" + encodeURIComponent(fullUrl);
         }}
     }}, true);
     document.addEventListener("click", function(e) {{
@@ -705,7 +709,7 @@ class AlexaDaemon:
         if (a && a.href && a.href.indexOf("proxy.php") === -1 && (a.href.indexOf(aHost) !== -1 || (a.getAttribute("href") && a.getAttribute("href").indexOf("/ap/") === 0))) {{
             var full = a.href;
             e.preventDefault();
-            window.location.href = pBase + "?url=" + encodeURIComponent(full);
+            window.location.href = pBase + sep + "url=" + encodeURIComponent(full);
         }}
     }}, true);
 }})();

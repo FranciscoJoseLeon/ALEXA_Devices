@@ -13,6 +13,8 @@ if (!isConnect('admin')) {
 
 $current_user = config::byKey('amazon_username', 'alexa_devices', '');
 $current_domain = config::byKey('amazon_domain', 'alexa_devices', 'es');
+$auth_token = sha1(config::byKey('amazon_token', 'alexa_devices', '') . microtime() . rand());
+cache::set('alexa_devices_auth_token', $auth_token, 1800);
 ?>
 
 <div class="row">
@@ -145,7 +147,8 @@ $current_domain = config::byKey('amazon_domain', 'alexa_devices', 'es');
     // Ouvrir la fenêtre officielle Amazon (Proxy)
     $('#btn_open_amazon_proxy').on('click', function () {
         var domain = $('#modal_domain').val();
-        var proxyUrl = 'plugins/alexa_devices/core/php/proxy.php?action=start&domain=' + encodeURIComponent(domain);
+        var authToken = '<?php echo $auth_token; ?>';
+        var proxyUrl = 'plugins/alexa_devices/core/php/proxy.php?action=start&domain=' + encodeURIComponent(domain) + '&auth_token=' + encodeURIComponent(authToken);
 
         var width = 600;
         var height = 750;

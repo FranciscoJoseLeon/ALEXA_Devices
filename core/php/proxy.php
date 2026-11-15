@@ -8,8 +8,13 @@
  */
 
 require_once __DIR__ . '/../../../../core/php/core.inc.php';
+include_file('core', 'authentification', 'php');
 
-if (!isConnect('admin')) {
+$auth_token = init('auth_token', '');
+$cached_token = cache::byKey('alexa_devices_auth_token')->getValue('');
+$is_token_valid = (!empty($auth_token) && !empty($cached_token) && $auth_token === $cached_token);
+
+if (!isConnect('admin') && !$is_token_valid) {
     http_response_code(401);
     die('401 - Accès non autorisé');
 }
@@ -22,6 +27,10 @@ $target_url = init('url', '');
 $domain = init('domain', 'es');
 
 $proxy_base = 'plugins/alexa_devices/core/php/proxy.php';
+if (!empty($auth_token)) {
+    $proxy_base .= '?auth_token=' . urlencode($auth_token);
+}
+
 if ($action == 'start') {
     $daemon_url = "http://{$daemon_host}:{$daemon_port}/proxy/start?domain=" . urlencode($domain) . "&proxy_base=" . urlencode($proxy_base);
 } else {
@@ -76,6 +85,11 @@ foreach (explode("\r\n", $header_text) as $i => $line) {
     $lower = strtolower($line);
     if (strpos($lower, 'transfer-encoding:') === 0 || strpos($lower, 'content-length:') === 0) {
         continue;
+    }
+    if (strpos($lower, 'location:') === 0 && !empty($auth_token)) {
+        if (strpos($line, 'auth_token=') === false) {
+            $line .= (strpos($line, '?') !== false ? '&' : '?') . 'auth_token=' . urlencode($auth_token);
+        }
     }
     header($line, false);
 }
