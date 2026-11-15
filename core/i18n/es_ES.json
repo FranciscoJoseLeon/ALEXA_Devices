@@ -209,7 +209,10 @@
         "Example Trigger": "Ejemplo de Disparador",
         "Example Condition": "Ejemplo de Condición",
         "Scheduled / Automatic Alexa Routines": "Rutinas automáticas de Alexa (sin voz)",
-        "Amazon does not push internal routine completions; expose a Jeedom virtual switch to Alexa or trigger on a monitored Echo state (e.g. dnd_status or volume).": "Amazon no envía aviso cuando termina una rutina automática; expón un interruptor virtual de Jeedom a Alexa o dispara el escenario con un estado del Echo (ej. dnd_status o volume)."
+        "Amazon does not push internal routine completions; expose a Jeedom virtual switch to Alexa or trigger on a monitored Echo state (e.g. dnd_status or volume).": "Amazon no envía aviso cuando termina una rutina automática; expón un interruptor virtual de Jeedom a Alexa o dispara el escenario con un estado del Echo (ej. dnd_status o volume).",
+        "Runs any phrase as if you said \"Alexa, ...\" — ideal for Smart Home actions (e.g. \"turn on living room light\", \"set thermostat to 22 degrees\", \"turn off workshop plug\").": "Ejecuta cualquier frase como si dijeras \"Alexa, ...\" — ideal para Hogar Digital (ej. \"enciende la luz del salón\", \"pon el termostato a 22 grados\", \"apaga el enchufe del taller\").",
+        "Alexa Smart Home devices": "Dispositivos de Hogar Digital Alexa",
+        "You can control third-party lights, plugs, blinds or thermostats via Voice Command (text_command) or Amazon Routines, but this plugin does not import them as Jeedom devices or read their state.": "Puedes controlar bombillas, enchufes, persianas o termostatos de terceros mediante Comando de voz (text_command) o Rutinas de Amazon, pero este plugin no los importa como equipos de Jeedom ni lee su estado."
     },
     "plugins/alexa_devices/desktop/js/alexa_devices.js": {
         "Devices synchronized successfully": "Dispositivos sincronizados con éxito",
@@ -292,7 +295,18 @@
         "what is the weather": "qué tiempo hace",
         "Timer 5m": "Temporizador 5m",
         "set a 5 minute timer": "pon un temporizador de 5 minutos",
-        "Click an option to fill:": "Pulsa una opción para rellenar:"
+        "Click an option to fill:": "Pulsa una opción para rellenar:",
+        "Executes any phrase silently as if you spoke it to Alexa — ideal for controlling Alexa Smart Home devices (lights, plugs, blinds, thermostats).": "Ejecuta cualquier frase en silencio como si se la dijeras a Alexa — ideal para controlar Hogar Digital de Alexa (luces, enchufes, persianas, termostatos).",
+        "Light on": "Encender luz",
+        "turn on living room light": "enciende la luz del salón",
+        "Light 30%": "Luz al 30%",
+        "set bedroom light to 30 percent": "pon la luz del dormitorio al 30 por ciento",
+        "Plug off": "Apagar enchufe",
+        "turn off workshop plug": "apaga el enchufe del taller",
+        "Thermostat 22°": "Termostato 22°",
+        "set thermostat to 22 degrees": "pon el termostato a 22 grados",
+        "Open blind": "Abrir persiana",
+        "open bedroom blind": "abre la persiana del dormitorio"
     },
     "plugins/alexa_devices/core/class/alexa_devices.class.php": {
         "Please verify plugin configuration and dependencies.": "Por favor verifica la configuración del plugin y las dependencias.",

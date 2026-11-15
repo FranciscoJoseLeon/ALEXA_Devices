@@ -208,7 +208,10 @@
         "Example Trigger": "Example Trigger",
         "Example Condition": "Example Condition",
         "Scheduled / Automatic Alexa Routines": "Scheduled / Automatic Alexa Routines",
-        "Amazon does not push internal routine completions; expose a Jeedom virtual switch to Alexa or trigger on a monitored Echo state (e.g. dnd_status or volume).": "Amazon does not push internal routine completions; expose a Jeedom virtual switch to Alexa or trigger on a monitored Echo state (e.g. dnd_status or volume)."
+        "Amazon does not push internal routine completions; expose a Jeedom virtual switch to Alexa or trigger on a monitored Echo state (e.g. dnd_status or volume).": "Amazon does not push internal routine completions; expose a Jeedom virtual switch to Alexa or trigger on a monitored Echo state (e.g. dnd_status or volume).",
+        "Runs any phrase as if you said \"Alexa, ...\" — ideal for Smart Home actions (e.g. \"turn on living room light\", \"set thermostat to 22 degrees\", \"turn off workshop plug\").": "Runs any phrase as if you said \"Alexa, ...\" — ideal for Smart Home actions (e.g. \"turn on living room light\", \"set thermostat to 22 degrees\", \"turn off workshop plug\").",
+        "Alexa Smart Home devices": "Alexa Smart Home devices",
+        "You can control third-party lights, plugs, blinds or thermostats via Voice Command (text_command) or Amazon Routines, but this plugin does not import them as Jeedom devices or read their state.": "You can control third-party lights, plugs, blinds or thermostats via Voice Command (text_command) or Amazon Routines, but this plugin does not import them as Jeedom devices or read their state."
     },
     "plugins/alexa_devices/desktop/js/alexa_devices.js": {
         "Devices synchronized successfully": "Devices synchronized successfully",
@@ -291,7 +294,18 @@
         "what is the weather": "what is the weather",
         "Timer 5m": "Timer 5m",
         "set a 5 minute timer": "set a 5 minute timer",
-        "Click an option to fill:": "Click an option to fill:"
+        "Click an option to fill:": "Click an option to fill:",
+        "Executes any phrase silently as if you spoke it to Alexa — ideal for controlling Alexa Smart Home devices (lights, plugs, blinds, thermostats).": "Executes any phrase silently as if you spoke it to Alexa — ideal for controlling Alexa Smart Home devices (lights, plugs, blinds, thermostats).",
+        "Light on": "Light on",
+        "turn on living room light": "turn on living room light",
+        "Light 30%": "Light 30%",
+        "set bedroom light to 30 percent": "set bedroom light to 30 percent",
+        "Plug off": "Plug off",
+        "turn off workshop plug": "turn off workshop plug",
+        "Thermostat 22°": "Thermostat 22°",
+        "set thermostat to 22 degrees": "set thermostat to 22 degrees",
+        "Open blind": "Open blind",
+        "open bedroom blind": "open bedroom blind"
     },
     "plugins/alexa_devices/core/class/alexa_devices.class.php": {
         "Please verify plugin configuration and dependencies.": "Please verify plugin configuration and dependencies.",

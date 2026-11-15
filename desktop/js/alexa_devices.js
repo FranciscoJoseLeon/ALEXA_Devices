@@ -206,7 +206,7 @@ function alexaGetCmdHelp(logicalId) {
         speak: '{{Reads any text aloud on this Echo. Supports SSML tags (auto-wrapped in &lt;speak&gt;); max 10s per &lt;break&gt; and ~500 chars.}}',
         whisper: '{{Speaks softly in a whispered voice. Can remain active during Night Silence if enabled in plugin configuration.}}',
         announcement: '{{Plays an announcement chime and broadcasts the message on this Echo.}}',
-        text_command: '{{Executes a phrase silently as if you spoke it to Alexa (e.g. "turn off living room lights").}}',
+        text_command: '{{Executes any phrase silently as if you spoke it to Alexa — ideal for controlling Alexa Smart Home devices (lights, plugs, blinds, thermostats).}}',
         set_volume: '{{Sets speaker volume between 0 and 100. Respects the Night Max Volume limit if configured.}}',
         play: '{{Resumes media playback on this device.}}',
         pause: '{{Pauses current media playback on this device.}}',
@@ -259,7 +259,11 @@ function alexaGetCmdPresets(logicalId) {
             { label: 'Amazon Music', val: 'AMAZON_MUSIC|Jazz' }
         ],
         text_command: [
-            { label: '{{Turn off lights}}', val: '{{turn off lights}}' },
+            { label: '{{Light on}}', val: '{{turn on living room light}}' },
+            { label: '{{Light 30%}}', val: '{{set bedroom light to 30 percent}}' },
+            { label: '{{Plug off}}', val: '{{turn off workshop plug}}' },
+            { label: '{{Thermostat 22°}}', val: '{{set thermostat to 22 degrees}}' },
+            { label: '{{Open blind}}', val: '{{open bedroom blind}}' },
             { label: '{{Weather}}', val: '{{what is the weather}}' },
             { label: '{{Timer 5m}}', val: '{{set a 5 minute timer}}' }
         ],

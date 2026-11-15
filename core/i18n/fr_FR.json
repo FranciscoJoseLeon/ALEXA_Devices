@@ -209,7 +209,10 @@
         "Example Trigger": "Exemple de Déclencheur",
         "Example Condition": "Exemple de Condition",
         "Scheduled / Automatic Alexa Routines": "Routines automatiques Alexa (sans voix)",
-        "Amazon does not push internal routine completions; expose a Jeedom virtual switch to Alexa or trigger on a monitored Echo state (e.g. dnd_status or volume).": "Amazon n’envoie pas de notification de fin de routine automatique ; exposez un interrupteur virtuel Jeedom à Alexa ou déclenchez sur un état Echo (ex. dnd_status ou volume)."
+        "Amazon does not push internal routine completions; expose a Jeedom virtual switch to Alexa or trigger on a monitored Echo state (e.g. dnd_status or volume).": "Amazon n’envoie pas de notification de fin de routine automatique ; exposez un interrupteur virtuel Jeedom à Alexa ou déclenchez sur un état Echo (ex. dnd_status ou volume).",
+        "Runs any phrase as if you said \"Alexa, ...\" — ideal for Smart Home actions (e.g. \"turn on living room light\", \"set thermostat to 22 degrees\", \"turn off workshop plug\").": "Exécute n’importe quelle phrase comme si vous disiez « Alexa, ... » — idéal pour la Maison Connectée (ex. « allume la lumière du salon », « mets le thermostat à 22 degrés »).",
+        "Alexa Smart Home devices": "Appareils Maison Connectée Alexa",
+        "You can control third-party lights, plugs, blinds or thermostats via Voice Command (text_command) or Amazon Routines, but this plugin does not import them as Jeedom devices or read their state.": "Vous pouvez piloter des ampoules, prises, volets ou thermostats tiers via Commande vocale (text_command) ou Routines Amazon, mais ce plugin ne les importe pas comme équipements Jeedom et ne lit pas leur état."
     },
     "plugins/alexa_devices/desktop/js/alexa_devices.js": {
         "Devices synchronized successfully": "Appareils synchronisés avec succès",
@@ -292,7 +295,18 @@
         "what is the weather": "quel temps fait-il",
         "Timer 5m": "Minuteur 5m",
         "set a 5 minute timer": "mets un minuteur de 5 minutes",
-        "Click an option to fill:": "Cliquez sur une option pour remplir :"
+        "Click an option to fill:": "Cliquez sur une option pour remplir :",
+        "Executes any phrase silently as if you spoke it to Alexa — ideal for controlling Alexa Smart Home devices (lights, plugs, blinds, thermostats).": "Exécute toute phrase silencieusement comme si vous parliez à Alexa — idéal pour piloter la Maison Connectée Alexa (lumières, prises, volets, thermostats).",
+        "Light on": "Allumer lumière",
+        "turn on living room light": "allume la lumière du salon",
+        "Light 30%": "Lumière à 30%",
+        "set bedroom light to 30 percent": "mets la lumière de la chambre à 30 pour cent",
+        "Plug off": "Éteindre prise",
+        "turn off workshop plug": "éteins la prise de l’atelier",
+        "Thermostat 22°": "Thermostat 22°",
+        "set thermostat to 22 degrees": "mets le thermostat à 22 degrés",
+        "Open blind": "Ouvrir volet",
+        "open bedroom blind": "ouvre le volet de la chambre"
     },
     "plugins/alexa_devices/core/class/alexa_devices.class.php": {
         "Please verify plugin configuration and dependencies.": "Veuillez vérifier la configuration du plugin et les dépendances.",

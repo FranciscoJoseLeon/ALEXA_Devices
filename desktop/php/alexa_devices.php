@@ -245,7 +245,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                     <li><strong>{{Speak (TTS)}}</strong> — {{Reads any text aloud. Supports SSML tags for pauses, speed, or pitch.}}</li>
                                     <li><strong>{{Whisper}}</strong> — {{Speaks softly in a whisper (can stay active during night silence).}}</li>
                                     <li><strong>{{Announcement}}</strong> — {{Plays a chime and broadcasts an announcement.}}</li>
-                                    <li><strong>{{Voice Command}}</strong> — {{Runs any phrase as if you said "Alexa, ..." (e.g. "turn off lights").}}</li>
+                                    <li><strong>{{Voice Command}}</strong> — {{Runs any phrase as if you said "Alexa, ..." — ideal for Smart Home actions (e.g. "turn on living room light", "set thermostat to 22 degrees", "turn off workshop plug").}}</li>
                                 </ul>
                             </div>
                         </div>
@@ -380,6 +380,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                 <li><strong>{{Speak / Whisper / Announcement}}</strong>: {{Amazon limits each message to ~500 characters (~240s audio). Blocked during Night Silence if enabled (except Whisper if allowed).}}</li>
                                 <li><strong>{{Set Volume}}</strong>: {{Accepts 0–100; automatically capped to the Night Max Volume during night hours when configured.}}</li>
                                 <li><strong>{{Speaker Groups / Smart TVs}}</strong>: {{Multi-room groups (WHA) and some third-party TVs do not support Speak or Whisper (Amazon restriction).}}</li>
+                                <li><strong>{{Alexa Smart Home devices}}</strong>: {{You can control third-party lights, plugs, blinds or thermostats via Voice Command (text_command) or Amazon Routines, but this plugin does not import them as Jeedom devices or read their state.}}</li>
                             </ul>
                         </div>
                     </div>
