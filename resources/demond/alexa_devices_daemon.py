@@ -760,6 +760,11 @@ class AlexaDaemon:
 
         cfg = json.dumps({"p": proxy_base, "h": amazon_host, "c": current_url or f"https://{amazon_host}/"})
         helper_script = """
+<style>
+body, h1, h2, h3, h4, p, label, span, div, a, input, button, .a-text-bold {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
+}
+</style>
 <script>
 (function () {
     var C = %s;
