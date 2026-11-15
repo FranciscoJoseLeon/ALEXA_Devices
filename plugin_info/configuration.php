@@ -21,8 +21,8 @@ $deps_ok = (isset($dep_info['state']) && $dep_info['state'] == 'ok');
 
 $jeeObjects = jeeObject::all();
 $alexaDevices = eqLogic::byType('alexa_devices');
-$routinesJson = config::byKey('routines_list', 'alexa_devices', '[]');
-$routinesList = json_decode($routinesJson, true);
+$routinesJson = config::byKey('routines_list', 'alexa_devices', array());
+$routinesList = is_string($routinesJson) ? json_decode($routinesJson, true) : $routinesJson;
 if (!is_array($routinesList)) {
     $routinesList = array();
 }

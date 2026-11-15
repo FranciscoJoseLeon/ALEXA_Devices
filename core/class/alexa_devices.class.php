@@ -479,7 +479,8 @@ class alexa_devices extends eqLogic {
         // 17. Action: Run Alexa routine (dropdown list)
         $routineSelectCmd = $this->getOrCreateCmd('routine_select', 'action', 'select', __('Run Routine (List)', __FILE__), false);
         if (is_object($routineSelectCmd)) {
-            $routines = json_decode(config::byKey('routines_list', 'alexa_devices', '[]'), true);
+            $rawRoutines = config::byKey('routines_list', 'alexa_devices', array());
+            $routines = is_string($rawRoutines) ? json_decode($rawRoutines, true) : $rawRoutines;
             if (is_array($routines) && !empty($routines)) {
                 $parts = array();
                 foreach ($routines as $r) {
