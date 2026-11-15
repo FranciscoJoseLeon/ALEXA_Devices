@@ -491,7 +491,7 @@ class alexa_devices extends eqLogic {
         $lastVal = is_object($last) ? $last->execCmd() : '';
         $replace['#last_command#'] = !empty($lastVal) ? htmlspecialchars($lastVal) : __('No recent commands', __FILE__);
 
-        $actionCmds = array('play', 'pause', 'next', 'previous', 'text_command', 'speak');
+        $actionCmds = array('play', 'pause', 'stop', 'next', 'previous', 'text_command', 'speak');
         foreach ($actionCmds as $c) {
             $cmdObj = $this->getCmd(null, $c);
             $replace['#' . $c . '_id#'] = is_object($cmdObj) ? $cmdObj->getId() : '';
@@ -504,7 +504,7 @@ class alexa_devices extends eqLogic {
             'text_command' => __('Voice command (e.g. turn on kitchen light)...', __FILE__),
             'sound' => __('Sound ID (e.g. amzn_sfx_doorbell_chime_01)...', __FILE__),
             'info_skill' => __('weather, traffic, joke, time, calendar_today...', __FILE__),
-            'play_music' => __('Song, artist or playlist...', __FILE__),
+            'music' => __('Song, artist or playlist...', __FILE__),
             'routine' => __('Exact Alexa routine name...', __FILE__),
             'set_volume' => __('0 - 100', __FILE__),
         );
@@ -564,9 +564,10 @@ class alexa_devices extends eqLogic {
             $volCmd->save();
         }
 
-        // 10. Action: Play / Pause / Next / Previous
+        // 10. Action: Play / Pause / Stop / Next / Previous
         $this->getOrCreateCmd('play', 'action', 'other', __('Play', __FILE__), true);
         $this->getOrCreateCmd('pause', 'action', 'other', __('Pause', __FILE__), true);
+        $this->getOrCreateCmd('stop', 'action', 'other', __('Stop', __FILE__), true);
         $this->getOrCreateCmd('next', 'action', 'other', __('Next', __FILE__), true);
         $this->getOrCreateCmd('previous', 'action', 'other', __('Previous', __FILE__), true);
 
@@ -718,6 +719,7 @@ class alexa_devicesCmd extends cmd {
 
             case 'play':
             case 'pause':
+            case 'stop':
             case 'next':
             case 'previous':
                 $action = 'media_command';

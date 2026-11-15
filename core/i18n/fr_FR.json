@@ -365,7 +365,8 @@
         "Exact Alexa routine name...": "Nom exact de la routine Alexa...",
         "0 - 100": "0 - 100",
         "Parameter...": "Paramètre...",
-        "Last command heard by Alexa": "Dernière commande entendue par Alexa"
+        "Last command heard by Alexa": "Dernière commande entendue par Alexa",
+        "Stop": "Arrêter"
     },
     "plugins/alexa_devices/core/ajax/alexa_devices.ajax.php": {
         "401 - Unauthorized access": "401 - Accès non autorisé",
@@ -399,7 +400,8 @@
         "Exact Alexa routine name...": "Nom exact de la routine Alexa...",
         "0 - 100": "0 - 100",
         "Parameter...": "Paramètre...",
-        "Command help & configuration": "Aide, configuration et options des commandes"
+        "Command help & configuration": "Aide, configuration et options des commandes",
+        "Stop": "Arrêter"
     },
     "plugins/alexa_devices/core/php/proxy.php": {
         "401 - Unauthorized access": "401 - Accès non autorisé",
