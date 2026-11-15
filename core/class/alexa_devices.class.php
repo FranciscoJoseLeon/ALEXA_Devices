@@ -338,7 +338,7 @@ class alexa_devices extends eqLogic {
         $hwVersion = isset($device['hardware_version']) ? trim((string)$device['hardware_version']) : '';
         if ($hwVersion === '' && $devType !== '') {
             $hwFallback = array(
-                'A3EH2E0YZ30OD6' => '2024 (2nd Gen)',
+                'A3EH2E0YZ30OD6' => '2024 / 2nd Gen',
                 'A10A33FOX2NUBK' => '1st Gen',
                 'A2U21SRK4QGSE1' => '4th Gen',
                 'A3RMGO6LYLH7YN' => '4th Gen',
