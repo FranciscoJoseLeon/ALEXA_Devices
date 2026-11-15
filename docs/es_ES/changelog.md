@@ -1,6 +1,6 @@
 # Changelog Alexa Devices
 
-## [1.0.0] - 14/11/2026
+## [0.9.0] - 14/11/2026
 ### Añadido
 - Versión inicial estable para Jeedom v4 / v4.4+.
 - Soporte para flujo push HTTP/2 en tiempo real con Amazon AVS.
