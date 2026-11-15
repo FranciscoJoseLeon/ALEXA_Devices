@@ -225,14 +225,77 @@ function alexaGetCmdHelp(logicalId) {
     return map[logicalId] || '{{Executes this command directly on the Alexa device.}}';
 }
 
+function alexaGetCmdPresets(logicalId) {
+    var presets = {
+        speak: [
+            { label: '{{Whisper (SSML)}}', val: '<amazon:effect name="whispered">{{Hello, I am whispering}}</amazon:effect>' },
+            { label: '{{Pause 3s (max 10s)}}', val: '{{One}} <break time="3s"/> {{Two}}' },
+            { label: '{{Soft volume}}', val: '<prosody volume="soft">{{Hello}}</prosody>' },
+            { label: '{{Loud volume}}', val: '<prosody volume="x-loud">{{Attention}}</prosody>' },
+            { label: '{{Slow speed}}', val: '<prosody rate="slow">{{Speaking slowly}}</prosody>' },
+            { label: '{{Fast speed}}', val: '<prosody rate="fast">{{Speaking fast}}</prosody>' },
+            { label: '{{Low pitch}}', val: '<prosody pitch="low">{{Deep voice}}</prosody>' },
+            { label: '{{High pitch}}', val: '<prosody pitch="high">{{High voice}}</prosody>' },
+            { label: '{{Strong emphasis}}', val: '<emphasis level="strong">{{Important}}</emphasis>' },
+            { label: '{{Digits}}', val: '<say-as interpret-as="digits">1234</say-as>' }
+        ],
+        whisper: [
+            { label: '{{Good night}}', val: '{{Good night}}' },
+            { label: '{{Door open}}', val: '{{The front door is open}}' }
+        ],
+        announcement: [
+            { label: '{{Dinner ready}}', val: '{{Dinner is ready}}' },
+            { label: '{{Someone at door}}', val: '{{Someone is at the door}}' }
+        ],
+        sound: [
+            { label: '{{Doorbell}}', val: 'amzn_sfx_doorbell_chime_01' },
+            { label: '{{Siren}}', val: 'amzn_sfx_siren_01' },
+            { label: '{{Bell}}', val: 'bell_02' },
+            { label: '{{Christmas}}', val: 'christmas_01' }
+        ],
+        music: [
+            { label: 'Spotify', val: 'SPOTIFY|Queen' },
+            { label: 'TuneIn Radio', val: 'TUNEIN|Los 40' },
+            { label: 'Amazon Music', val: 'AMAZON_MUSIC|Jazz' }
+        ],
+        text_command: [
+            { label: '{{Turn off lights}}', val: '{{turn off lights}}' },
+            { label: '{{Weather}}', val: '{{what is the weather}}' },
+            { label: '{{Timer 5m}}', val: '{{set a 5 minute timer}}' }
+        ],
+        set_volume: [
+            { label: '10%', val: '10' },
+            { label: '25%', val: '25' },
+            { label: '50%', val: '50' },
+            { label: '75%', val: '75' },
+            { label: '100%', val: '100' }
+        ]
+    };
+    return presets[logicalId] || [];
+}
+
 function alexaRenderTesterCmd(cmd) {
     var $wrap = $('#alexa_cmd_tester_input_wrap').empty().hide();
-    var $help = $('#alexa_cmd_tester_help');
+    var $help = $('#alexa_cmd_tester_help').empty();
     if (!cmd) {
-        $help.text('');
         return;
     }
-    $help.html('<i class="fas fa-info-circle" style="color:#00CAFA;"></i> ' + alexaGetCmdHelp(cmd.logicalId));
+    $help.append($('<div>').html('<i class="fas fa-info-circle" style="color:#00CAFA;"></i> ' + alexaGetCmdHelp(cmd.logicalId)));
+
+    var presets = alexaGetCmdPresets(cmd.logicalId);
+    if (presets.length) {
+        var $chips = $('<div class="alexa-tester-presets"></div>');
+        $chips.append($('<span class="alexa-tester-presets-label">').text('{{Click an option to fill:}} '));
+        for (var p = 0; p < presets.length; p++) {
+            var pr = presets[p];
+            $('<button type="button" class="btn btn-default btn-xs alexa-preset-chip"></button>')
+                .text(pr.label)
+                .attr('title', pr.val)
+                .data('preset-val', pr.val)
+                .appendTo($chips);
+        }
+        $help.append($chips);
+    }
 
     if (cmd.subType === 'message') {
         var $inp = $('<input type="text" id="alexa_cmd_tester_val" class="form-control input-sm">')
@@ -322,5 +385,13 @@ $('#alexa_cmd_tester_input_wrap').off('keypress', '#alexa_cmd_tester_val').on('k
     if (e.which === 13) {
         e.preventDefault();
         $('#btn_alexa_cmd_tester_run').click();
+    }
+});
+
+$('#alexa_cmd_tester_help').off('click', '.alexa-preset-chip').on('click', '.alexa-preset-chip', function () {
+    var val = $(this).data('preset-val');
+    var $inp = $('#alexa_cmd_tester_val');
+    if ($inp.length) {
+        $inp.val(val).focus();
     }
 });
