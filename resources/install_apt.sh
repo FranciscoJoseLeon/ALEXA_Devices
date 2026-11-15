@@ -51,7 +51,7 @@ if [ "$NEED_UV" -eq 1 ]; then
     echo "Aprovisionando entorno virtual Python 3.13 con uv en /opt/uv-python..."
     uv python install 3.13
     chmod -R 755 /opt/uv-python
-    uv venv --clear demond/venv --python /opt/uv-python/cpython-3.13*-linux-*/bin/python3.13
+    uv venv --clear demond/venv --python 3.13
     echo 85 > "$PROGRESS_FILE"
     echo "Instalando dependencias de requirements.txt con uv..."
     uv pip install --python demond/venv/bin/python -r requirements.txt
