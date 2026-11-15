@@ -12,7 +12,11 @@
   "licence": "GPL",
   "version": "0.9.0",
   "require": "4.2",
-  "language": ["fr_FR", "en_US", "es_ES"],
+  "language": [
+    "fr_FR",
+    "en_US",
+    "es_ES"
+  ],
   "hasDependency": true,
   "hasOwnDeamon": true,
   "maxDependancyInstallTime": 25,
