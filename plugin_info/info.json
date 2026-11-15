@@ -20,8 +20,8 @@
   "hasDependency": true,
   "hasOwnDeamon": true,
   "maxDependancyInstallTime": 25,
-  "changelog": "https://github.com/FranciscoJoseLeon/ALEXA_Devices/blob/main/docs/#language#/changelog.md",
-  "documentation": "https://github.com/FranciscoJoseLeon/ALEXA_Devices/blob/main/docs/#language#/index.md",
+  "changelog": "https://github.com/FranciscoJoseLeon/plugin-alexa_devices/blob/main/docs/#language#/changelog.md",
+  "documentation": "https://github.com/FranciscoJoseLeon/plugin-alexa_devices/blob/main/docs/#language#/index.md",
   "compatibility": [
     "miniplus",
     "smart",
