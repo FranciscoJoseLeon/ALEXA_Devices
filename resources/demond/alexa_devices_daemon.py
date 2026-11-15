@@ -999,6 +999,13 @@ body, h1, h2, h3, h4, p, label, span, div, a, input, button, .a-text-bold {
         try:
             if action == "speak":
                 text = params.get("text", "")
+                stripped = text.strip()
+                if stripped and not stripped.lower().startswith("<speak") and re.search(
+                    r"<(break|amazon:effect|prosody|say-as|emphasis|phoneme|sub)\b",
+                    stripped,
+                    re.IGNORECASE,
+                ):
+                    text = f"<speak>{stripped}</speak>"
                 await self.api.call_alexa_speak(device, text)
 
             elif action == "announcement":

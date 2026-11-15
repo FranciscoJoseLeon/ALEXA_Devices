@@ -281,7 +281,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                     </div>
                     <div id="alexa_ssml_help" class="panel-collapse collapse">
                         <div class="panel-body" style="font-size:12px;">
-                            <p>{{You can wrap your Speak (TTS) message in &lt;speak&gt;...&lt;/speak&gt; to customize Alexa's voice, or use the Whisper command directly:}}</p>
+                            <p>{{You can use SSML tags directly inside Speak (TTS) (they are auto-wrapped in &lt;speak&gt;...&lt;/speak&gt; if omitted), or use the Whisper command directly:}}</p>
                             <table class="table table-condensed table-bordered" style="margin-bottom:0;">
                                 <thead>
                                     <tr>
@@ -295,8 +295,8 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                         <td><code>&lt;speak&gt;&lt;amazon:effect name="whispered"&gt;{{Hello}}&lt;/amazon:effect&gt;&lt;/speak&gt;</code></td>
                                     </tr>
                                     <tr>
-                                        <td>{{Pause}}</td>
-                                        <td><code>&lt;speak&gt;{{One}} &lt;break time="1s"/&gt; {{Two}}&lt;/speak&gt;</code></td>
+                                        <td>{{Pause (max 10s per tag)}}</td>
+                                        <td><code>{{One}} &lt;break time="5s"/&gt; {{Two}}</code></td>
                                     </tr>
                                     <tr>
                                         <td>{{Volume (x-soft, soft, medium, loud, x-loud)}}</td>
@@ -327,6 +327,14 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                 <li><strong>{{Play Music}}</strong>: {{Write a song/artist/station name, or specify the provider in Title or with}} <code>PROVEEDOR|búsqueda</code> (<code>SPOTIFY|Queen</code>, <code>TUNEIN|Los 40</code>, <code>AMAZON_MUSIC|Jazz</code>)</li>
                                 <li><strong>{{Info Skill}}</strong>: {{Select Weather, Traffic, News, Time, Joke, Good Morning, Good Night, etc.}}</li>
                                 <li><strong>{{Run Routine}}</strong>: {{Enter the exact name of your Alexa routine as configured in the Alexa app.}}</li>
+                            </ul>
+                            <hr style="margin:10px 0;"/>
+                            <p style="margin-bottom:6px;"><strong>{{Command limitations &amp; restrictions:}}</strong></p>
+                            <ul style="margin-bottom:0; padding-left:20px;">
+                                <li><strong>&lt;break time="..."/&gt;</strong>: {{Maximum 10s (10000ms) per tag (Amazon SSML limit). To wait longer or repeat a phrase (e.g. 120s), use a Jeedom Scenario DANS / WAIT block.}}</li>
+                                <li><strong>{{Speak / Whisper / Announcement}}</strong>: {{Amazon limits each message to ~500 characters (~240s audio). Blocked during Night Silence if enabled (except Whisper if allowed).}}</li>
+                                <li><strong>{{Set Volume}}</strong>: {{Accepts 0–100; automatically capped to the Night Max Volume during night hours when configured.}}</li>
+                                <li><strong>{{Speaker Groups / Smart TVs}}</strong>: {{Multi-room groups (WHA) and some third-party TVs do not support Speak or Whisper (Amazon restriction).}}</li>
                             </ul>
                         </div>
                     </div>

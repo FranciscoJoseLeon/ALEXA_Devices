@@ -182,7 +182,16 @@
         "Last Command &amp; Next Alarm": "Dernière Commande &amp; Prochaine Alarme",
         "Displays the latest voice interaction and upcoming alarms/timers.": "Affiche la dernière interaction vocale et les prochaines alarmes ou minuteurs.",
         "Refresh": "Actualiser",
-        "Forces an immediate state update from Amazon servers.": "Force une mise à jour immédiate de l'état depuis les serveurs Amazon."
+        "Forces an immediate state update from Amazon servers.": "Force une mise à jour immédiate de l'état depuis les serveurs Amazon.",
+        "You can use SSML tags directly inside Speak (TTS) (they are auto-wrapped in &lt;speak&gt;...&lt;/speak&gt; if omitted), or use the Whisper command directly:": "Vous pouvez utiliser les balises SSML directement dans Parler (TTS) (elles sont entourées automatiquement de &lt;speak&gt;...&lt;/speak&gt; si nécessaire), ou utiliser directement Chuchoter :",
+        "Pause (max 10s per tag)": "Pause (10s max par balise)",
+        "Command limitations &amp; restrictions:": "Limitations et restrictions des commandes :",
+        "Maximum 10s (10000ms) per tag (Amazon SSML limit). To wait longer or repeat a phrase (e.g. 120s), use a Jeedom Scenario DANS / WAIT block.": "Maximum 10s (10000ms) par balise (limite SSML d'Amazon). Pour attendre plus longtemps ou répéter une phrase (ex. 120s), utilisez un bloc DANS / WAIT dans un scénario Jeedom.",
+        "Speak / Whisper / Announcement": "Parler / Chuchoter / Annonce",
+        "Amazon limits each message to ~500 characters (~240s audio). Blocked during Night Silence if enabled (except Whisper if allowed).": "Amazon limite chaque message à ~500 caractères (~240s d'audio). Bloqués pendant le Silence Nocturne s'il est activé (sauf Chuchoter si autorisé).",
+        "Accepts 0–100; automatically capped to the Night Max Volume during night hours when configured.": "Accepte 0–100 ; plafonné automatiquement au Volume maximal nocturne pendant la nuit si configuré.",
+        "Speaker Groups / Smart TVs": "Groupes d'enceintes / Smart TV",
+        "Multi-room groups (WHA) and some third-party TVs do not support Speak or Whisper (Amazon restriction).": "Les groupes multi-pièces (WHA) et certains téléviseurs tiers ne prennent pas en charge Parler ni Chuchoter (restriction Amazon)."
     },
     "plugins/alexa_devices/desktop/js/alexa_devices.js": {
         "Devices synchronized successfully": "Appareils synchronisés avec succès",
