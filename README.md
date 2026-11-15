@@ -1,136 +1,101 @@
-# Plugin Alexa Devices para Jeedom
+# Alexa Devices — Plugin Jeedom
 
-Integración nativa y completa para dispositivos **Amazon Echo y Alexa** adaptada a la arquitectura de **Jeedom v4 / v4.4+**.
+[![Jeedom Compatibility](https://img.shields.io/badge/Jeedom-v4.2%2B-24b35b.svg)](https://www.jeedom.com)
+[![Version](https://img.shields.io/badge/version-0.9.0-blue.svg)](https://github.com/FranciscoJoseLeon/ALEXA_Devices)
+[![Languages](https://img.shields.io/badge/lang-fr__FR%20%7C%20en__US%20%7C%20es__ES-informational.svg)](#readme)
+[![License: GPL](https://img.shields.io/badge/License-GPL-blue.svg)](LICENSE)
 
-Este plugin utiliza la librería asíncrona moderna [`aioamazondevices`](https://github.com/chemelli74/aioamazondevices), garantizando compatibilidad con el protocolo push oficial **HTTP/2 de Amazon AVS**.
+🌐 **Languages / Langues / Idiomas :** [🇫🇷 Français](#-français) • [🇬🇧 English](#-english) • [🇪🇸 Español](#-español)
 
----
-
-## 🚀 Características Principales
-
-- **Descubrimiento Automático**: Detecta todos los altavoces Amazon Echo (Dot, Show, Pop, Studio, Fire TV, etc.) asociados a tu cuenta.
-- **Push en Tiempo Real (HTTP/2)**: Conexión persistente mediante stream HTTP/2 con Amazon. Las actualizaciones de volumen, sensores, estado multimedia y comandos de voz se reflejan instantáneamente sin necesidad de peticiones de sondeo continuas (evitando bloqueos por *Rate Limiting / Too Many Requests*).
-- **Text-to-Speech (TTS)**: Comando para hacer hablar a cualquier Echo (`speak`).
-- **Anuncios (Announcements)**: Emite avisos sonoros con tono de atención previo (`announcement`).
-- **Comandos de Voz por Texto (`text_command`)**: Permite simular comandos hablados directamente en texto (por ejemplo: *"enciende la luz del salón"*, *"pon música jazz en Spotify"*, etc.).
-- **Control Multimedia Completo**: Reproducir, Pausar, Siguiente, Anterior y estado actual (*PLAYING*, *PAUSED*, *IDLE*).
-- **Control de Volumen Bidireccional**: Slider de 0 a 100 con sincronización inmediata.
-- **Modo No Molestar (DND)**: Activación y desactivación del modo No Molestar.
-- **Historial Vocal**: Muestra en un comando info el último comando de voz que capturó el Echo.
-- **Sensores Integrados**: Soporte para sensores de temperatura y detección de presencia en dispositivos compatibles (Echo 4ª gen, Echo Dot con reloj, etc.).
-- **Autenticación Segura con 2FA / OTP**: Asistente interactivo compatible con verificación en dos pasos (SMS o apps como Google Authenticator).
+📚 **Documentation complète / Full Documentation / Documentación completa :**
+- 🇫🇷 [Documentation (fr_FR)](docs/fr_FR/index.md) • [Changelog (fr_FR)](docs/fr_FR/changelog.md)
+- 🇬🇧 [Documentation (en_US)](docs/en_US/index.md) • [Changelog (en_US)](docs/en_US/changelog.md)
+- 🇪🇸 [Documentación (es_ES)](docs/es_ES/index.md) • [Changelog (es_ES)](docs/es_ES/changelog.md)
 
 ---
 
-## 🏛️ Arquitectura del Plugin
+## 🇫🇷 Français
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                       JEEDOM CORE                           │
-│  - eqLogic: Dispositivos Echo                               │
-│  - cmd: Speak, Volume, DND, Media, TextCommand              │
-│  - Webhook: core/php/jeeAlexaDevices.php                    │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-               (Llamadas REST / Webhook local)
-                               │
-┌──────────────────────────────▼──────────────────────────────┐
-│             DEMONIO PYTHON (alexa_devices_daemon.py)        │
-│  - Servidor REST local (aiohttp.web) en 127.0.0.1:55065      │
-│  - Librería: aioamazondevices + httpx (HTTP/2)              │
-│  - Persistencia de sesión y tokens: data/storage/           │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-            (Stream push HTTP/2 + APIs Amazon AVS)
-                               │
-┌──────────────────────────────▼──────────────────────────────┐
-│                    SERVIDORES DE AMAZON                     │
-│  - Dispositivos Echo, Estado, Sensores y Notificaciones     │
-└─────────────────────────────────────────────────────────────┘
-```
+Plugin d'intégration native pour les appareils **Amazon Echo et Alexa** dans **Jeedom v4.2+**, basé sur la bibliothèque asynchrone moderne [`aioamazondevices`](https://github.com/chemelli74/aioamazondevices) avec prise en charge du protocole push temps réel **HTTP/2 d'Amazon AVS**.
 
-1. **Demonio en Python 3**: El plugin ejecuta un servicio en segundo plano dentro de un entorno virtual aislado (`demond/venv`) con `aioamazondevices`.
-2. **Comunicación Local**:
-   - Cuando Jeedom envía una orden (ej. *TTS*, *Volumen* o *Pausa*), la clase PHP hace una petición `POST` al demonio en `http://127.0.0.1:55065/api/command`.
-   - Cuando Amazon envía un evento por el stream HTTP/2 (ej. alguien cambió el volumen físicamente o habló al Echo), el demonio llama al webhook de Jeedom (`core/php/jeeAlexaDevices.php`) con un token de seguridad para refrescar los comandos de forma inmediata.
+### 🚀 Fonctionnalités principales
+
+- **Découverte automatique** : Détecte tous vos appareils Echo (Dot, Show, Pop, Studio, Fire TV, groupes multiroom, etc.) et affiche uniquement le modèle correspondant (avec sélecteur de modèle).
+- **Push HTTP/2 en temps réel** : Connexion persistante sans polling agressif, mettant à jour instantanément le volume, l'état multimédia, les capteurs et la dernière commande vocale.
+- **Widget Dashboard dédié** : Contrôle complet depuis le Dashboard (Lecture, Pause, **Stop**, Précédent, Suivant, Volume bidirectionnel, Ne pas déranger, sélection de sons/musique par liste déroulante, TTS, Annonces, Commandes texte). Un clic sur l'en-tête ouvre directement la configuration de l'équipement.
+- **Authentification sécurisée 2FA / OTP** : Assistant interactif compatible avec la vérification en deux étapes Amazon.
+- **Capteurs intégrés** : Température et détection de présence sur les appareils compatibles.
+
+### 🛠️ Installation depuis GitHub dans Jeedom
+
+1. Dans Jeedom, allez dans **Plugins → Gestion des plugins → Ajouter un plugin depuis GitHub** :
+   - **ID logique du plugin** : `alexa_devices`
+   - **Utilisateur ou organisation** : `FranciscoJoseLeon`
+   - **Nom du dépôt** : `ALEXA_Devices`
+   - **Branche** : `main` (ou `beta` pour les dernières nouveautés)
+2. Activez le plugin et installez les **Dépendances** (Python 3 + environnement virtuel).
+3. Configurez votre domaine Amazon, connectez-vous via **Connexion / 2FA OTP**, démarrez le **Démon**, puis cliquez sur **Synchroniser les appareils**.
+
+### ⚖️ Avertissement
+
+Ce plugin est un projet communautaire open source sous licence **GPL**, non affilié ni approuvé par Amazon.com, Inc. ou Jeedom SAS. Fourni « tel quel », sans garantie.
 
 ---
 
-## 📂 Estructura de Archivos
+## 🇬🇧 English
 
-```
-alexa_devices/
-├── core/
-│   ├── ajax/
-│   │   └── alexa_devices.ajax.php        # Controlador AJAX (login, sync, health)
-│   ├── class/
-│   │   └── alexa_devices.class.php       # Clases eqLogic y cmd de Jeedom
-│   ├── i18n/
-│   │   ├── en_US.json                    # Diccionario oficial en inglés
-│   │   ├── es_ES.json                    # Diccionario oficial en español
-│   │   └── fr_FR.json                    # Diccionario oficial en francés
-│   ├── php/
-│   │   └── jeeAlexaDevices.php           # Webhook receptor de eventos push del demonio
-│   └── template/
-│       ├── dashboard/                    # Widget interactivo para Dashboard
-│       └── mobile/                       # Widget optimizado para móvil
-├── desktop/
-│   ├── css/
-│   │   └── alexa_devices.css             # Estilos de tarjetas de equipos
-│   ├── js/
-│   │   └── alexa_devices.js              # Lógica de interfaz de usuario
-│   ├── modal/
-│   │   └── login.modal.php               # Modal de inicio de sesión con soporte 2FA OTP
-│   └── php/
-│       └── alexa_devices.php             # Pantalla de gestión de dispositivos
-├── docs/                                 # Documentación multilingüe oficial (en_US, fr_FR, es_ES)
-├── plugin_info/
-│   ├── alexa_devices_icon.png            # Icono del plugin para Jeedom
-│   ├── configuration.php                 # Página de configuración del plugin
-│   ├── info.json                         # Metadatos del plugin Jeedom
-│   └── install.php                       # Hooks de instalación / desinstalación
-├── resources/
-│   ├── data/
-│   │   └── storage/                      # Almacenamiento seguro de tokens y cookies
-│   ├── demond/
-│   │   └── alexa_devices_daemon.py       # Demonio Python con aioamazondevices
-│   ├── install_apt.sh                    # Script bash para dependencias y venv
-│   └── requirements.txt                  # Dependencias Python
-└── README.md
-```
+Native integration plugin for **Amazon Echo and Alexa** devices in **Jeedom v4.2+**, powered by the modern asynchronous library [`aioamazondevices`](https://github.com/chemelli74/aioamazondevices) with **Amazon AVS HTTP/2** real-time push support.
+
+### 🚀 Key Features
+
+- **Automatic Discovery**: Detects all Echo speakers and groups (Dot, Show, Pop, Studio, Fire TV, multiroom groups) and displays the matching device model (with optional model override).
+- **Real-Time HTTP/2 Push**: Persistent connection avoiding aggressive polling, updating volume, playback state, sensors, and last voice command instantly.
+- **Dedicated Dashboard Widget**: Full control from the Jeedom Dashboard (Play, Pause, **Stop**, Previous, Next, bidirectional Volume slider, Do Not Disturb, dropdown selectors for sounds/music, TTS, Announcements, and Text Commands). Clicking the widget header opens the device configuration page directly.
+- **Secure 2FA / OTP Authentication**: Interactive login modal supporting Amazon two-step verification.
+- **Built-in Sensors**: Temperature and presence detection on supported Echo devices.
+
+### 🛠️ Installation from GitHub in Jeedom
+
+1. In Jeedom, go to **Plugins → Plugin Management → Add plugin from GitHub**:
+   - **Plugin logical ID**: `alexa_devices`
+   - **User or organization**: `FranciscoJoseLeon`
+   - **Repository name**: `ALEXA_Devices`
+   - **Branch**: `main` (or `beta` for latest updates)
+2. Activate the plugin and install **Dependencies** (Python 3 + virtual environment).
+3. Select your Amazon domain, sign in via **Login / 2FA OTP**, start the **Daemon**, and click **Sync Devices**.
+
+### ⚖️ Disclaimer
+
+This plugin is an independent open-source community project licensed under **GPL**, not affiliated with or endorsed by Amazon.com, Inc. or Jeedom SAS. Provided "AS IS" without warranty of any kind.
 
 ---
 
-## 🛠️ Instalación y Configuración
+## 🇪🇸 Español
 
-### 1. Despliegue en Jeedom
-Copia o clona este repositorio dentro del directorio de plugins de Jeedom:
-```bash
-cd /var/www/html/plugins/
-git clone https://github.com/tu-usuario/alexa_devices.git alexa_devices
-chown -R www-data:www-data alexa_devices
-```
+Plugin de integración nativa para dispositivos **Amazon Echo y Alexa** en **Jeedom v4.2+**, basado en la librería asíncrona moderna [`aioamazondevices`](https://github.com/chemelli74/aioamazondevices) con soporte para eventos push en tiempo real **HTTP/2 de Amazon AVS**.
 
-### 2. Instalación de Dependencias
-1. Entra en Jeedom y ve a **Plugins > Gestión de Plugins > Alexa Devices**.
-2. Haz clic en **Activar**.
-3. En la sección **Dependencias**, haz clic en **Instalar**. Espera a que el proceso termine (creará el entorno virtual Python y descargará `aioamazondevices`, `aiohttp` y `httpx`).
+### 🚀 Características principales
 
-### 3. Autenticación con Amazon
-1. En la configuración del plugin, selecciona tu dominio (ejemplo: `Amazon España (amazon.es)`).
-2. Haz clic en el botón **Iniciar Sesión / 2FA OTP**.
-3. Introduce tu correo, contraseña y el código de 6 dígitos de tu app de verificación en dos pasos (o SMS).
-4. El demonio validará la sesión y guardará de forma cifrada los tokens de sesión en `resources/data/storage`.
+- **Descubrimiento automático**: Detecta todos tus altavoces y grupos Echo (Dot, Show, Pop, Studio, Fire TV, grupos multiroom) mostrando el modelo exacto correspondiente (con selector opcional para cambiarlo).
+- **Push HTTP/2 en tiempo real**: Conexión persistente sin sondeos agresivos, reflejando al instante cambios de volumen, estado multimedia, sensores y último comando vocal.
+- **Widget dedicado en el Dashboard**: Control completo desde el Dashboard (Reproducir, Pausar, **Parar**, Anterior, Siguiente, Volumen bidireccional, No Molestar/DND, desplegable de sonidos/música, TTS, Anuncios y Comandos de texto). Al pulsar en la cabecera del widget se abre la configuración del dispositivo.
+- **Autenticación segura 2FA / OTP**: Asistente interactivo compatible con verificación en dos pasos de Amazon.
+- **Sensores integrados**: Temperatura y detección de presencia en dispositivos Echo compatibles.
 
-### 4. Sincronización de Dispositivos
-1. Dirígete a **Plugins > Multimedia > Alexa Devices**.
-2. Haz clic en **Sincronizar Dispositivos**.
-3. Todos tus altavoces y pantallas Echo aparecerán listados con sus mandos, volumen, sensores y controles interactivos listos para usar en tus escenarios y en el Dashboard.
+### 🛠️ Instalación desde GitHub en Jeedom
+
+1. En Jeedom, ve a **Plugins → Gestión de plugins → Añadir un plugin desde GitHub**:
+   - **ID lógico del plugin**: `alexa_devices`
+   - **Usuario u organización**: `FranciscoJoseLeon`
+   - **Nombre del repositorio**: `ALEXA_Devices`
+   - **Rama**: `main` (o `beta` para las últimas mejoras)
+2. Activa el plugin e instala las **Dependencias** (Python 3 + entorno virtual).
+3. Elige tu dominio de Amazon, inicia sesión con **Iniciar sesión / 2FA OTP**, arranca el **Demonio** y pulsa **Sincronizar dispositivos**.
+
+### ⚖️ Exención de responsabilidad
+
+Este plugin es un proyecto comunitario de código abierto bajo licencia **GPL**, sin afiliación ni respaldo oficial de Amazon.com, Inc. ni de Jeedom SAS. Se entrega «tal cual», sin garantías.
 
 ---
 
-## ⚖️ Descargo de Responsabilidad (Disclaimer)
-
-1. **No Afiliación con Amazon**: Este plugin es un proyecto de código abierto desarrollado de forma independiente por la comunidad y **NO** está respaldado, patrocinado, certificado ni afiliado de ninguna manera con Amazon.com, Inc., Amazon Technologies, Inc. ni ninguna de sus filiales. *Amazon*, *Echo*, *Alexa* y todas las marcas y logotipos relacionados son marcas registradas propiedad de Amazon.com, Inc. o sus subsidiarias.
-2. **Exención de Garantía (AS IS)**: Este software se suministra "tal cual" (*AS IS*), sin garantías de ningún tipo, explícitas o implícitas. Dado que depende de servicios en la nube y protocolos de terceros sujetos a modificaciones sin previo aviso por parte de Amazon, el funcionamiento puede verse afectado o interrumpido temporalmente.
-3. **Limitación de Responsabilidad**: En ningún caso los autores o colaboradores serán responsables de ningún daño directo, indirecto, incidental, especial o consecuente (incluyendo, entre otros, pérdida de datos, interrupción de servicios, fallos en automatizaciones del hogar o costes de recuperación) derivados del uso o imposibilidad de uso de este software. El usuario asume toda la responsabilidad derivada de su utilización.
+Developed by **Francisco José León** ([@FranciscoJoseLeon](https://github.com/FranciscoJoseLeon))
