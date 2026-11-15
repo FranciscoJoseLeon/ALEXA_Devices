@@ -464,6 +464,7 @@ class alexa_devices extends eqLogic {
             return $replace;
         }
         $version = jeedom::versionAlias($_version);
+        $replace['#eqLogic_href#'] = $this->getLinkToConfiguration();
 
         $status = $this->getCmd(null, 'status');
         $isOnline = (is_object($status) && $status->execCmd() == 1);
