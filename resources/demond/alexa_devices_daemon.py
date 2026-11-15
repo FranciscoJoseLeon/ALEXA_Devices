@@ -1178,7 +1178,17 @@ async def main():
     args = parser.parse_args()
 
     numeric_level = getattr(logging, args.loglevel.upper(), logging.INFO)
+    logging.getLogger().setLevel(numeric_level)
     LOGGER.setLevel(numeric_level)
+    if numeric_level > logging.DEBUG:
+        logging.getLogger("httpx").setLevel(logging.WARNING)
+        logging.getLogger("httpcore").setLevel(logging.WARNING)
+
+        class _IgnoreHarmlessCommsWarning(logging.Filter):
+            def filter(self, record: logging.LogRecord) -> bool:
+                return "Failed to refresh communications settings for device" not in record.getMessage()
+
+        logging.getLogger("aioamazondevices").addFilter(_IgnoreHarmlessCommsWarning())
 
     daemon = AlexaDaemon(
         port=args.port,
