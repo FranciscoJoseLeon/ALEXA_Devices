@@ -83,7 +83,8 @@
         "All devices deleted and rescan completed.": "Todos los dispositivos eliminados y reescaneo completado.",
         "Are you sure you want to clear the saved Amazon session? You will need to sign in again.": "¿Estás seguro de que quieres borrar la sesión de Amazon guardada? Tendrás que iniciar sesión de nuevo.",
         "Error resetting session": "Error al restablecer la sesión",
-        "Amazon session cleared. You can now sign in again.": "Sesión de Amazon borrada. Ya puedes volver a iniciar sesión."
+        "Amazon session cleared. You can now sign in again.": "Sesión de Amazon borrada. Ya puedes volver a iniciar sesión.",
+        "None": "Ninguno"
     },
     "plugins/alexa_devices/desktop/php/alexa_devices.php": {
         "401 - Unauthorized access": "401 - Acceso no autorizado",
