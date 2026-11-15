@@ -191,7 +191,10 @@
         "Amazon limits each message to ~500 characters (~240s audio). Blocked during Night Silence if enabled (except Whisper if allowed).": "Amazon limita cada mensaje a ~500 caracteres (~240s de audio). Bloqueados durante el Silencio Nocturno si está activo (salvo Susurrar si está permitido).",
         "Accepts 0–100; automatically capped to the Night Max Volume during night hours when configured.": "Admite 0–100; se limita automáticamente al Volumen máximo nocturno durante la noche si está configurado.",
         "Speaker Groups / Smart TVs": "Grupos de altavoces / Smart TVs",
-        "Multi-room groups (WHA) and some third-party TVs do not support Speak or Whisper (Amazon restriction).": "Los grupos multi-habitación (WHA) y algunos televisores de terceros no admiten Hablar ni Susurrar (restricción de Amazon)."
+        "Multi-room groups (WHA) and some third-party TVs do not support Speak or Whisper (Amazon restriction).": "Los grupos multi-habitación (WHA) y algunos televisores de terceros no admiten Hablar ni Susurrar (restricción de Amazon).",
+        "Test available commands": "Prueba los comandos disponibles",
+        "Select any command from the list to see what it does and test it directly on this device.": "Selecciona cualquier comando de la lista para ver qué hace y probarlo directamente en este dispositivo.",
+        "Test now": "Probar ahora"
     },
     "plugins/alexa_devices/desktop/js/alexa_devices.js": {
         "Devices synchronized successfully": "Dispositivos sincronizados con éxito",
@@ -217,7 +220,26 @@
         "Set value": "Establecer valor",
         "Execute": "Ejecutar",
         "No options synchronized yet": "Sin opciones sincronizadas aún",
-        "Command executed": "Comando ejecutado"
+        "Command executed": "Comando ejecutado",
+        "Reads any text aloud on this Echo. Supports SSML tags (auto-wrapped in &lt;speak&gt;); max 10s per &lt;break&gt; and ~500 chars.": "Lee cualquier texto en voz alta en este Echo. Admite etiquetas SSML (envueltas automáticamente en &lt;speak&gt;); máx. 10s por &lt;break&gt; y ~500 caracteres.",
+        "Speaks softly in a whispered voice. Can remain active during Night Silence if enabled in plugin configuration.": "Habla suavemente en voz de susurro. Puede seguir activo durante el Silencio Nocturno si se permite en configuración.",
+        "Plays an announcement chime and broadcasts the message on this Echo.": "Emite un tono de aviso y difunde el mensaje como anuncio en este Echo.",
+        "Executes a phrase silently as if you spoke it to Alexa (e.g. \"turn off living room lights\").": "Ejecuta una frase en silencio como si se la dijeras a Alexa (ej. \"apaga las luces del salón\").",
+        "Sets speaker volume between 0 and 100. Respects the Night Max Volume limit if configured.": "Ajusta el volumen del altavoz entre 0 y 100. Respeta el Volumen Máximo Nocturno si está configurado.",
+        "Resumes media playback on this device.": "Reanuda la reproducción multimedia en este dispositivo.",
+        "Pauses current media playback on this device.": "Pausa la reproducción multimedia actual en este dispositivo.",
+        "Skips to the next track or item.": "Salta a la siguiente pista o elemento.",
+        "Returns to the previous track or item.": "Vuelve a la pista o elemento anterior.",
+        "Plays a song, artist or TuneIn station (you can also use SPOTIFY|query or TUNEIN|station).": "Reproduce una canción, artista o emisora TuneIn (también puedes usar SPOTIFY|búsqueda o TUNEIN|emisora).",
+        "Plays a built-in Alexa sound effect (e.g. amzn_sfx_doorbell_chime_01, bell_02, amzn_sfx_siren_01).": "Reproduce un efecto de sonido integrado de Alexa (ej. amzn_sfx_doorbell_chime_01, bell_02, amzn_sfx_siren_01).",
+        "Runs an Alexa info briefing such as Weather, Traffic, News, Time, Joke or Good Morning.": "Lanza un resumen de Alexa como Tiempo, Tráfico, Noticias, Hora, Chiste o Buenos días.",
+        "Runs an Amazon Alexa routine by typing its exact name from the Alexa app.": "Ejecuta una rutina de Amazon Alexa escribiendo su nombre exacto de la app Alexa.",
+        "Selects and runs one of your synchronized Amazon Alexa routines.": "Selecciona y ejecuta una de tus rutinas de Amazon Alexa sincronizadas.",
+        "Enables Do Not Disturb (silences calls, drop-ins and notifications).": "Activa No Molestar (silencia llamadas, Drop In y notificaciones).",
+        "Disables Do Not Disturb on this device.": "Desactiva No Molestar en este dispositivo.",
+        "Restarts media/connection state or refreshes device session.": "Reinicia el estado multimedia/conexión o refresca la sesión del dispositivo.",
+        "Forces an immediate status refresh from Amazon servers.": "Fuerza una actualización inmediata del estado desde los servidores de Amazon.",
+        "Executes this command directly on the Alexa device.": "Ejecuta este comando directamente en el dispositivo Alexa."
     },
     "plugins/alexa_devices/core/class/alexa_devices.class.php": {
         "Please verify plugin configuration and dependencies.": "Por favor verifica la configuración del plugin y las dependencias.",

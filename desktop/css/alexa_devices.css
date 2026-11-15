@@ -149,3 +149,23 @@
 .alexa-cap-list li {
     margin-bottom: 4px;
 }
+
+.alexa-tester-box {
+    background: var(--defaultBkg-color, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-top: 3px solid #00CAFA;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 8px rgba(0, 202, 250, 0.08);
+}
+
+.alexa-tester-help {
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--txt-color, #2d3748);
+    background: rgba(0, 202, 250, 0.08);
+    border-radius: 6px;
+    padding: 8px 10px;
+}

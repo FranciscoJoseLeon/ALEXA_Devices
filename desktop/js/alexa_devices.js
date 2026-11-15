@@ -198,3 +198,129 @@ $('#table_cmd').off('keypress', '.alexa-quick-val').on('keypress', '.alexa-quick
         $(this).closest('tr.cmd').find('.btn-alexa-exec').click();
     }
 });
+
+var alexaTesterCmds = {};
+
+function alexaGetCmdHelp(logicalId) {
+    var map = {
+        speak: '{{Reads any text aloud on this Echo. Supports SSML tags (auto-wrapped in &lt;speak&gt;); max 10s per &lt;break&gt; and ~500 chars.}}',
+        whisper: '{{Speaks softly in a whispered voice. Can remain active during Night Silence if enabled in plugin configuration.}}',
+        announcement: '{{Plays an announcement chime and broadcasts the message on this Echo.}}',
+        text_command: '{{Executes a phrase silently as if you spoke it to Alexa (e.g. "turn off living room lights").}}',
+        set_volume: '{{Sets speaker volume between 0 and 100. Respects the Night Max Volume limit if configured.}}',
+        play: '{{Resumes media playback on this device.}}',
+        pause: '{{Pauses current media playback on this device.}}',
+        next: '{{Skips to the next track or item.}}',
+        previous: '{{Returns to the previous track or item.}}',
+        music: '{{Plays a song, artist or TuneIn station (you can also use SPOTIFY|query or TUNEIN|station).}}',
+        sound: '{{Plays a built-in Alexa sound effect (e.g. amzn_sfx_doorbell_chime_01, bell_02, amzn_sfx_siren_01).}}',
+        info_skill: '{{Runs an Alexa info briefing such as Weather, Traffic, News, Time, Joke or Good Morning.}}',
+        routine: '{{Runs an Amazon Alexa routine by typing its exact name from the Alexa app.}}',
+        routine_select: '{{Selects and runs one of your synchronized Amazon Alexa routines.}}',
+        dnd_on: '{{Enables Do Not Disturb (silences calls, drop-ins and notifications).}}',
+        dnd_off: '{{Disables Do Not Disturb on this device.}}',
+        restart: '{{Restarts media/connection state or refreshes device session.}}',
+        refresh: '{{Forces an immediate status refresh from Amazon servers.}}'
+    };
+    return map[logicalId] || '{{Executes this command directly on the Alexa device.}}';
+}
+
+function alexaRenderTesterCmd(cmd) {
+    var $wrap = $('#alexa_cmd_tester_input_wrap').empty().hide();
+    var $help = $('#alexa_cmd_tester_help');
+    if (!cmd) {
+        $help.text('');
+        return;
+    }
+    $help.html('<i class="fas fa-info-circle" style="color:#00CAFA;"></i> ' + alexaGetCmdHelp(cmd.logicalId));
+
+    if (cmd.subType === 'message') {
+        var $inp = $('<input type="text" id="alexa_cmd_tester_val" class="form-control input-sm">')
+            .attr('placeholder', alexaGetMessagePlaceholder(cmd.logicalId));
+        $wrap.append($inp).show();
+    } else if (cmd.subType === 'slider') {
+        var minV = (cmd.configuration && cmd.configuration.minValue !== undefined) ? cmd.configuration.minValue : 0;
+        var maxV = (cmd.configuration && cmd.configuration.maxValue !== undefined) ? cmd.configuration.maxValue : 100;
+        var $inp = $('<input type="number" id="alexa_cmd_tester_val" class="form-control input-sm">')
+            .attr({ min: minV, max: maxV, placeholder: minV + '-' + maxV, value: 40 });
+        $wrap.append($inp).show();
+    } else if (cmd.subType === 'select') {
+        var listStr = (cmd.configuration && cmd.configuration.listValue) ? cmd.configuration.listValue : '';
+        var $sel = $('<select id="alexa_cmd_tester_val" class="form-control input-sm"></select>');
+        var items = listStr.split(';');
+        for (var i = 0; i < items.length; i++) {
+            if (!items[i]) continue;
+            var pair = items[i].split('|');
+            var v = pair[0];
+            var l = pair.length > 1 ? pair[1] : pair[0];
+            $sel.append($('<option>').val(v).text(l));
+        }
+        $wrap.append($sel).show();
+    }
+}
+
+function printEqLogic(_eqLogic) {
+    alexaTesterCmds = {};
+    var $sel = $('#alexa_cmd_tester_select').empty();
+    if (!_eqLogic || !Array.isArray(_eqLogic.cmd)) {
+        alexaRenderTesterCmd(null);
+        return;
+    }
+    var firstId = null;
+    for (var i = 0; i < _eqLogic.cmd.length; i++) {
+        var c = _eqLogic.cmd[i];
+        if (c.type !== 'action') continue;
+        alexaTesterCmds[c.id] = c;
+        if (firstId === null) firstId = c.id;
+        $sel.append($('<option>').val(c.id).text(c.name + ' (' + c.logicalId + ')'));
+    }
+    if (firstId !== null) {
+        $sel.val(firstId);
+        alexaRenderTesterCmd(alexaTesterCmds[firstId]);
+    } else {
+        alexaRenderTesterCmd(null);
+    }
+}
+
+$('#alexa_cmd_tester_select').off('change').on('change', function () {
+    var cmd = alexaTesterCmds[$(this).val()] || null;
+    alexaRenderTesterCmd(cmd);
+});
+
+$('#btn_alexa_cmd_tester_run').off('click').on('click', function () {
+    var cmdId = $('#alexa_cmd_tester_select').val();
+    var cmd = alexaTesterCmds[cmdId];
+    if (!cmd) return;
+    var valueObj = {};
+    var $val = $('#alexa_cmd_tester_val');
+    if (cmd.subType === 'message') {
+        var msg = $val.val();
+        if (!msg) { $val.focus(); return; }
+        valueObj = { title: '', message: msg };
+    } else if (cmd.subType === 'slider') {
+        var num = $val.val();
+        if (num === '' || num === null) { $val.focus(); return; }
+        valueObj = { slider: num };
+    } else if (cmd.subType === 'select') {
+        var opt = $val.val();
+        if (opt === '' || opt === null) return;
+        valueObj = { select: opt };
+    }
+    jeedom.cmd.execute({
+        id: cmd.id,
+        value: valueObj,
+        error: function (error) {
+            $('#div_alert').showAlert({ message: error.message || error, level: 'danger' });
+        },
+        success: function () {
+            $('#div_alert').showAlert({ message: '{{Command executed}}: ' + cmd.name, level: 'success' });
+        }
+    });
+});
+
+$('#alexa_cmd_tester_input_wrap').off('keypress', '#alexa_cmd_tester_val').on('keypress', '#alexa_cmd_tester_val', function (e) {
+    if (e.which === 13) {
+        e.preventDefault();
+        $('#btn_alexa_cmd_tester_run').click();
+    }
+});

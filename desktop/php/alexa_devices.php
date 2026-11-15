@@ -208,6 +208,27 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 </form>
 
                 <hr style="margin: 22px 0 18px 0;"/>
+                <div class="alexa-tester-box">
+                    <h4 class="alexa-capabilities-title">
+                        <i class="fas fa-vial" style="color:#00CAFA;"></i> {{Test available commands}}
+                    </h4>
+                    <p class="alexa-capabilities-subtitle">
+                        {{Select any command from the list to see what it does and test it directly on this device.}}
+                    </p>
+                    <div class="row" style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0;">
+                        <div style="flex:1 1 240px; max-width:340px;">
+                            <select id="alexa_cmd_tester_select" class="form-control input-sm"></select>
+                        </div>
+                        <div id="alexa_cmd_tester_input_wrap" style="flex:2 1 260px; display:none;"></div>
+                        <div>
+                            <button type="button" id="btn_alexa_cmd_tester_run" class="btn btn-primary btn-sm">
+                                <i class="fas fa-play"></i> {{Test now}}
+                            </button>
+                        </div>
+                    </div>
+                    <div id="alexa_cmd_tester_help" class="alexa-tester-help"></div>
+                </div>
+
                 <div class="alexa-capabilities-section">
                     <h4 class="alexa-capabilities-title">
                         <i class="fas fa-compass" style="color:#00CAFA;"></i> {{What can you do with this Alexa device?}}
