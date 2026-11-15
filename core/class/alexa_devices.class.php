@@ -334,12 +334,29 @@ class alexa_devices extends eqLogic {
             }
         }
 
+        $devType = isset($device['device_type']) ? strtoupper((string)$device['device_type']) : '';
+        $hwVersion = isset($device['hardware_version']) ? trim((string)$device['hardware_version']) : '';
+        if ($hwVersion === '' && $devType !== '') {
+            $hwFallback = array(
+                'A3EH2E0YZ30OD6' => '2024 (2nd Gen)',
+                'A10A33FOX2NUBK' => '1st Gen',
+                'A2U21SRK4QGSE1' => '4th Gen',
+                'A3RMGO6LYLH7YN' => '4th Gen',
+                'A3FX4UWTP28V1P' => '3rd Gen',
+                'A32DOYMUN6DTXA' => '3rd Gen',
+                'A3S5BH2HU6VAYF' => '2nd Gen',
+            );
+            if (isset($hwFallback[$devType])) {
+                $hwVersion = $hwFallback[$devType];
+            }
+        }
+
         $eqLogic->setName($name);
         $eqLogic->setConfiguration('device_family', isset($device['device_family']) ? $device['device_family'] : '');
         $eqLogic->setConfiguration('device_type', isset($device['device_type']) ? $device['device_type'] : '');
         $eqLogic->setConfiguration('software_version', isset($device['software_version']) ? $device['software_version'] : '');
         $eqLogic->setConfiguration('model', isset($device['model']) ? $device['model'] : '');
-        $eqLogic->setConfiguration('hardware_version', isset($device['hardware_version']) ? $device['hardware_version'] : '');
+        $eqLogic->setConfiguration('hardware_version', $hwVersion);
         $eqLogic->setConfiguration('manufacturer', isset($device['manufacturer']) ? $device['manufacturer'] : '');
         $eqLogic->setConfiguration('primary_display_category', isset($device['primary_display_category']) ? $device['primary_display_category'] : '');
         $eqLogic->save();
