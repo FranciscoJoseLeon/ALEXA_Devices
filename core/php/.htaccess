@@ -1,0 +1,10 @@
+# Le proxy d'authentification Amazon (proxy.php) affiche la page officielle de connexion Amazon.
+# La CSP globale de Jeedom bloque les feuilles de style et scripts du CDN Amazon (m.media-amazon.com),
+# ce qui rend la page illisible. On la retire uniquement pour proxy.php.
+<IfModule mod_headers.c>
+    <Files "proxy.php">
+        Header unset Content-Security-Policy
+        Header always unset Content-Security-Policy
+        Header unset X-Frame-Options
+    </Files>
+</IfModule>

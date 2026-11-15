@@ -11,6 +11,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import secrets
 import signal
 import sys
@@ -604,22 +605,34 @@ class AlexaDaemon:
         proxy_session: aiohttp.ClientSession = self.active_proxy["session"]
         method = request.method
 
+        parsed_target = urllib.parse.urlparse(target_url)
+        target_host = (parsed_target.hostname or "").lower()
+        if parsed_target.scheme != "https" or not self._is_allowed_amazon_host(target_host):
+            LOGGER.warning("Proxy: hôte refusé %s", target_host)
+            return web.Response(text="Host not allowed.", status=403, content_type="text/plain", charset="utf-8")
+
         headers = {}
         for k, v in request.headers.items():
-            if k.lower() in ("host", "content-length", "accept-encoding", "cookie"):
+            if k.lower() in ("host", "content-length", "accept-encoding", "cookie", "referer", "origin", "connection"):
                 continue
             headers[k] = v
 
-        parsed_target = urllib.parse.urlparse(target_url)
+        is_navigation = request.headers.get("Sec-Fetch-Mode", "navigate").lower() == "navigate"
         headers["Host"] = parsed_target.netloc or amazon_host
-        headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-        headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
-        headers["Accept-Language"] = f"{language},{language[:2]};q=0.9,en-US;q=0.8,en;q=0.7"
-        headers["Upgrade-Insecure-Requests"] = "1"
-        headers["Sec-Fetch-Dest"] = "document"
-        headers["Sec-Fetch-Mode"] = "navigate"
-        headers["Sec-Fetch-Site"] = "none"
-        headers["Sec-Fetch-User"] = "?1"
+        headers.setdefault("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+        headers["Accept-Language"] = f"{language.replace('_', '-')},{language[:2]};q=0.9,en-US;q=0.8,en;q=0.7"
+        if is_navigation:
+            headers.setdefault("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+            headers["Upgrade-Insecure-Requests"] = "1"
+            headers["Sec-Fetch-Dest"] = "document"
+            headers["Sec-Fetch-Mode"] = "navigate"
+            headers["Sec-Fetch-User"] = "?1"
+        last_page = self.active_proxy.get("last_page")
+        headers["Sec-Fetch-Site"] = "same-origin" if last_page else "none"
+        if last_page:
+            headers["Referer"] = last_page
+        if method not in ("GET", "HEAD"):
+            headers["Origin"] = f"https://{amazon_host}"
 
         body = None
         if method in ("POST", "PUT", "PATCH"):
@@ -652,8 +665,7 @@ class AlexaDaemon:
                                 return web.Response(text="Error al registrar en Amazon.", status=500, content_type="text/plain", charset="utf-8")
 
                     if location:
-                        if location.startswith("/"):
-                            location = f"https://{amazon_host}" + location
+                        location = urllib.parse.urljoin(target_url, location)
                         sep = "&" if "?" in proxy_base else "?"
                         rewritten_loc = f"{proxy_base}{sep}url={urllib.parse.quote(location, safe='')}"
                         resp_headers["Location"] = rewritten_loc
@@ -670,14 +682,21 @@ class AlexaDaemon:
                         "strict-transport-security",
                         "content-encoding",
                         "transfer-encoding",
+                        "content-length",
+                        "set-cookie",
+                        "alt-svc",
+                        "connection",
                     ):
                         continue
                     resp_headers[hk] = hv
 
+                if "text/html" in content_type and is_navigation:
+                    self.active_proxy["last_page"] = target_url
+
                 if "text/html" in content_type:
                     try:
                         text = content.decode("utf-8", errors="replace")
-                        text = self._rewrite_amazon_html(text, amazon_host, proxy_base)
+                        text = self._rewrite_amazon_html(text, amazon_host, proxy_base, target_url)
                         content = text.encode("utf-8")
                         resp_headers["Content-Length"] = str(len(content))
                     except Exception as err:
@@ -693,8 +712,17 @@ class AlexaDaemon:
             LOGGER.error("Error en proxy relay hacia %s: %s", target_url, err)
             return web.Response(text=f"Error en proxy: {err}", status=502, content_type="text/plain", charset="utf-8")
 
-    def _rewrite_amazon_html(self, html: str, amazon_host: str, proxy_base: str) -> str:
-        """Adapta enlaces y formularios en el HTML de Amazon para canalizarlos por el proxy."""
+    ALLOWED_AMAZON_HOST_RE = re.compile(
+        r"(^|\.)(amazon\.(com|es|fr|de|it|co\.uk|ca|com\.mx|co\.jp|com\.br|com\.au|in|nl|se|pl|com\.tr|ae|sa|sg)"
+        r"|media-amazon\.com|ssl-images-amazon\.com|amazon\.dev)$"
+    )
+
+    def _is_allowed_amazon_host(self, host: str) -> bool:
+        """Limite le proxy aux domaines Amazon (évite tout usage comme proxy ouvert)."""
+        return bool(host) and bool(self.ALLOWED_AMAZON_HOST_RE.search(host))
+
+    def _rewrite_amazon_html(self, html: str, amazon_host: str, proxy_base: str, current_url: str = "") -> str:
+        """Adapta enlaces, formularios y peticiones AJAX de la página de Amazon para que pasen por el proxy."""
         sep = "&" if "?" in proxy_base else "?"
         html = html.replace(f'action="https://{amazon_host}/', f'action="{proxy_base}{sep}url=https://{amazon_host}/')
         html = html.replace(f"action='https://{amazon_host}/", f"action='{proxy_base}{sep}url=https://{amazon_host}/")
@@ -702,48 +730,103 @@ class AlexaDaemon:
         html = html.replace("action='/", f"action='{proxy_base}{sep}url=https://{amazon_host}/")
 
         html = html.replace('href="/ap/', f'href="{proxy_base}{sep}url=https://{amazon_host}/ap/')
+        html = html.replace('href="/ax/', f'href="{proxy_base}{sep}url=https://{amazon_host}/ax/')
         html = html.replace(f'href="https://{amazon_host}/ap/', f'href="{proxy_base}{sep}url=https://{amazon_host}/ap/')
+        html = html.replace(f'href="https://{amazon_host}/ax/', f'href="{proxy_base}{sep}url=https://{amazon_host}/ax/')
 
-        helper_script = f"""
+        cfg = json.dumps({"p": proxy_base, "h": amazon_host, "c": current_url or f"https://{amazon_host}/"})
+        helper_script = """
 <script>
-(function() {{
-    var pBase = "{proxy_base}";
-    var aHost = "{amazon_host}";
-    var sep = pBase.indexOf('?') !== -1 ? '&' : '?';
-    document.addEventListener("submit", function(e) {{
+(function () {
+    var C = %s;
+    var sep = C.p.indexOf('?') !== -1 ? '&' : '?';
+    function isAmazon(host) { return /(^|\\.)amazon\\.[a-z.]+$/i.test(host); }
+    function abs(u) {
+        try { return new URL(u, C.c).href; } catch (e) { return null; }
+    }
+    function rw(u) {
+        if (typeof u !== 'string' && !(u instanceof URL)) return u;
+        u = String(u);
+        if (!u || u.indexOf(C.p) !== -1 || /^(data|blob|javascript|about):/i.test(u)) return u;
+        var full;
+        if (/^https?:\\/\\//i.test(u) || u.indexOf('//') === 0) {
+            full = abs(u);
+            if (!full) return u;
+            var host = new URL(full).hostname;
+            if (host === location.hostname) {
+                full = abs(new URL(full).pathname + new URL(full).search);
+            } else if (!isAmazon(host)) {
+                return u;
+            }
+        } else {
+            full = abs(u);
+            if (!full) return u;
+        }
+        return C.p + sep + 'url=' + encodeURIComponent(full);
+    }
+    var oFetch = window.fetch;
+    if (oFetch) {
+        window.fetch = function (input, init) {
+            try {
+                if (typeof input === 'string' || input instanceof URL) { input = rw(input); }
+                else if (input && input.url) { input = new Request(rw(input.url), input); }
+            } catch (e) {}
+            return oFetch.call(this, input, init);
+        };
+    }
+    var oOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (m, u) {
+        var a = Array.prototype.slice.call(arguments);
+        try { a[1] = rw(u); } catch (e) {}
+        return oOpen.apply(this, a);
+    };
+    if (navigator.sendBeacon) {
+        var oBeacon = navigator.sendBeacon.bind(navigator);
+        navigator.sendBeacon = function (u, d) { try { return oBeacon(rw(u), d); } catch (e) { return false; } };
+    }
+    document.addEventListener('submit', function (e) {
         var f = e.target;
-        if (f) {{
-            var fullUrl = f.getAttribute("action") || f.action || "";
-            if (!fullUrl || fullUrl.indexOf("http") !== 0) {{
-                fullUrl = "https://" + aHost + (fullUrl && fullUrl.charAt(0) === "/" ? "" : "/") + (fullUrl || "");
-            }}
-            if ((f.method || "get").toLowerCase() === "get") {{
-                e.preventDefault();
-                var params = new URLSearchParams(new FormData(f));
-                var target = fullUrl.split("?")[0] + "?" + params.toString();
-                window.location.href = pBase + sep + "url=" + encodeURIComponent(target);
-                return;
-            }}
-            if (f.action.indexOf("proxy.php") === -1 && f.action.indexOf("proxy/relay") === -1) {{
-                f.action = pBase + sep + "url=" + encodeURIComponent(fullUrl);
-            }}
-        }}
-    }}, true);
-    document.addEventListener("click", function(e) {{
-        var a = e.target.closest("a");
-        if (a && a.href && a.href.indexOf("proxy.php") === -1 && (a.href.indexOf(aHost) !== -1 || (a.getAttribute("href") && a.getAttribute("href").indexOf("/ap/") === 0))) {{
-            var full = a.href;
+        if (!f || !f.tagName) return;
+        var raw = f.getAttribute('action') || '';
+        if (raw.indexOf(C.p) !== -1) {
+            if ((f.method || 'get').toLowerCase() !== 'get') return;
+            var q = raw.indexOf('url=');
+            raw = q !== -1 ? decodeURIComponent(raw.substring(q + 4)) : C.c;
+        }
+        var target = abs(raw || C.c);
+        if (!target) return;
+        if ((f.method || 'get').toLowerCase() === 'get') {
             e.preventDefault();
-            window.location.href = pBase + sep + "url=" + encodeURIComponent(full);
-        }}
-    }}, true);
-}})();
+            var params = new URLSearchParams(new FormData(f)).toString();
+            window.location.href = C.p + sep + 'url=' + encodeURIComponent(target.split('?')[0] + (params ? '?' + params : ''));
+            return;
+        }
+        f.setAttribute('action', C.p + sep + 'url=' + encodeURIComponent(target));
+    }, true);
+    document.addEventListener('click', function (e) {
+        var a = e.target && e.target.closest ? e.target.closest('a') : null;
+        if (!a) return;
+        var raw = a.getAttribute('href');
+        if (!raw || raw.charAt(0) === '#' || /^(javascript|mailto|tel):/i.test(raw) || raw.indexOf(C.p) !== -1) return;
+        var target = abs(raw);
+        if (!target) return;
+        var host = new URL(target).hostname;
+        if (!isAmazon(host) && host !== location.hostname) return;
+        e.preventDefault();
+        window.location.href = rw(raw);
+    }, true);
+})();
 </script>
-"""
-        if "</body>" in html:
+""" % cfg
+        lower = html.lower()
+        idx = lower.find("<head")
+        if idx != -1:
+            end = html.find(">", idx)
+            html = html[: end + 1] + helper_script + html[end + 1:]
+        elif "</body>" in html:
             html = html.replace("</body>", helper_script + "</body>")
         else:
-            html += helper_script
+            html = helper_script + html
 
         return html
 
@@ -815,7 +898,7 @@ class AlexaDaemon:
   </script>
 </body>
 </html>"""
-        return web.Response(text=html, content_type="text/html; charset=utf-8")
+        return web.Response(text=html, content_type="text/html", charset="utf-8")
 
     async def handle_proxy_status(self, request: web.Request) -> web.Response:
         """Devuelve el estado de la autenticación por proxy."""
