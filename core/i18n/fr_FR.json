@@ -79,7 +79,23 @@
         "Type": "Type",
         "Parameters": "Paramètres",
         "Options": "Options",
-        "Action": "Action"
+        "Action": "Action",
+        "SSML Tags Help for Speak (TTS)": "Aide sur les balises SSML pour Parler (TTS)",
+        "You can wrap your Speak (TTS) message in <speak>...</speak> to customize Alexa's voice, or use the Whisper command directly:": "Vous pouvez encadrer votre message Parler (TTS) avec <speak>...</speak> pour personnaliser la voix d'Alexa, ou utiliser directement la commande Chuchoter :",
+        "Effect": "Effet",
+        "SSML Tag Example": "Exemple de balise SSML",
+        "Whispered voice": "Voix chuchotée",
+        "Hello": "Bonjour",
+        "Pause": "Pause",
+        "One": "Un",
+        "Two": "Deux",
+        "Volume (x-soft, soft, medium, loud, x-loud)": "Volume (x-soft, soft, medium, loud, x-loud)",
+        "Speed (x-slow, slow, medium, fast, x-fast)": "Vitesse (x-slow, slow, medium, fast, x-fast)",
+        "Pitch (x-low, low, medium, high, x-high)": "Hauteur (x-low, low, medium, high, x-high)",
+        "Emphasis (strong, moderate, reduced)": "Emphase (strong, moderate, reduced)",
+        "Attention": "Attention",
+        "Read as digits / date / time": "Lire comme chiffres / date / heure",
+        "You can wrap your Speak (TTS) message in &lt;speak&gt;...&lt;/speak&gt; to customize Alexa's voice, or use the Whisper command directly:": "Vous pouvez encadrer votre message Parler (TTS) avec &lt;speak&gt;...&lt;/speak&gt; pour personnaliser la voix d'Alexa, ou utiliser directement la commande Chuchoter :"
     },
     "plugins/alexa_devices/desktop/js/alexa_devices.js": {
         "Devices synchronized successfully": "Appareils synchronisés avec succès",
@@ -112,7 +128,8 @@
         "Online": "En ligne",
         "Offline": "Hors ligne",
         "Idle": "Inactif",
-        "No recent commands": "Aucune commande récente"
+        "No recent commands": "Aucune commande récente",
+        "Whisper": "Chuchoter"
     },
     "plugins/alexa_devices/core/ajax/alexa_devices.ajax.php": {
         "401 - Unauthorized access": "401 - Accès non autorisé",

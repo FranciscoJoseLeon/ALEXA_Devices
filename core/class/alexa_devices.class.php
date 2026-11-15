@@ -334,6 +334,9 @@ class alexa_devices extends eqLogic {
         // 6. Action: TTS (Speak)
         $this->getOrCreateCmd('speak', 'action', 'message', __('Speak (TTS)', __FILE__), true);
 
+        // 6b. Action: Whisper (SSML whispered TTS)
+        $this->getOrCreateCmd('whisper', 'action', 'message', __('Whisper', __FILE__), true);
+
         // 7. Action: Announcement (Chime + Speech)
         $this->getOrCreateCmd('announcement', 'action', 'message', __('Announcement', __FILE__), true);
 
@@ -402,6 +405,17 @@ class alexa_devicesCmd extends cmd {
             case 'speak':
                 $action = 'speak';
                 $params['text'] = isset($options['message']) ? $options['message'] : '';
+                break;
+
+            case 'whisper':
+                $action = 'speak';
+                $rawText = isset($options['message']) ? trim($options['message']) : '';
+                if (stripos($rawText, '<speak>') === 0) {
+                    $params['text'] = $rawText;
+                } else {
+                    $escaped = htmlspecialchars($rawText, ENT_XML1 | ENT_COMPAT, 'UTF-8');
+                    $params['text'] = '<speak><amazon:effect name="whispered">' . $escaped . '</amazon:effect></speak>';
+                }
                 break;
 
             case 'announcement':

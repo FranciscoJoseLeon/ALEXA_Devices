@@ -79,7 +79,23 @@
         "Type": "Type",
         "Parameters": "Parameters",
         "Options": "Options",
-        "Action": "Action"
+        "Action": "Action",
+        "SSML Tags Help for Speak (TTS)": "SSML Tags Help for Speak (TTS)",
+        "You can wrap your Speak (TTS) message in <speak>...</speak> to customize Alexa's voice, or use the Whisper command directly:": "You can wrap your Speak (TTS) message in <speak>...</speak> to customize Alexa's voice, or use the Whisper command directly:",
+        "Effect": "Effect",
+        "SSML Tag Example": "SSML Tag Example",
+        "Whispered voice": "Whispered voice",
+        "Hello": "Hello",
+        "Pause": "Pause",
+        "One": "One",
+        "Two": "Two",
+        "Volume (x-soft, soft, medium, loud, x-loud)": "Volume (x-soft, soft, medium, loud, x-loud)",
+        "Speed (x-slow, slow, medium, fast, x-fast)": "Speed (x-slow, slow, medium, fast, x-fast)",
+        "Pitch (x-low, low, medium, high, x-high)": "Pitch (x-low, low, medium, high, x-high)",
+        "Emphasis (strong, moderate, reduced)": "Emphasis (strong, moderate, reduced)",
+        "Attention": "Attention",
+        "Read as digits / date / time": "Read as digits / date / time",
+        "You can wrap your Speak (TTS) message in &lt;speak&gt;...&lt;/speak&gt; to customize Alexa's voice, or use the Whisper command directly:": "You can wrap your Speak (TTS) message in &lt;speak&gt;...&lt;/speak&gt; to customize Alexa's voice, or use the Whisper command directly:"
     },
     "plugins/alexa_devices/desktop/js/alexa_devices.js": {
         "Devices synchronized successfully": "Devices synchronized successfully",
@@ -112,7 +128,8 @@
         "Online": "Online",
         "Offline": "Offline",
         "Idle": "Idle",
-        "No recent commands": "No recent commands"
+        "No recent commands": "No recent commands",
+        "Whisper": "Whisper"
     },
     "plugins/alexa_devices/core/ajax/alexa_devices.ajax.php": {
         "401 - Unauthorized access": "401 - Unauthorized access",

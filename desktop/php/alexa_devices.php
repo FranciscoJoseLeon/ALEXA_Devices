@@ -229,6 +229,57 @@ if (!function_exists('alexa_get_device_icon_svg')) {
 
             <div role="tabpanel" class="tab-pane" id="commandtab">
                 <br/>
+                <div class="panel panel-info">
+                    <div class="panel-heading" style="cursor:pointer;" data-toggle="collapse" data-target="#alexa_ssml_help">
+                        <h4 class="panel-title" style="font-size:13px;">
+                            <i class="fas fa-question-circle"></i> {{SSML Tags Help for Speak (TTS)}}
+                            <i class="fas fa-chevron-down pull-right"></i>
+                        </h4>
+                    </div>
+                    <div id="alexa_ssml_help" class="panel-collapse collapse">
+                        <div class="panel-body" style="font-size:12px;">
+                            <p>{{You can wrap your Speak (TTS) message in &lt;speak&gt;...&lt;/speak&gt; to customize Alexa's voice, or use the Whisper command directly:}}</p>
+                            <table class="table table-condensed table-bordered" style="margin-bottom:0;">
+                                <thead>
+                                    <tr>
+                                        <th>{{Effect}}</th>
+                                        <th>{{SSML Tag Example}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{Whispered voice}}</td>
+                                        <td><code>&lt;speak&gt;&lt;amazon:effect name="whispered"&gt;{{Hello}}&lt;/amazon:effect&gt;&lt;/speak&gt;</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{Pause}}</td>
+                                        <td><code>&lt;speak&gt;{{One}} &lt;break time="1s"/&gt; {{Two}}&lt;/speak&gt;</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{Volume (x-soft, soft, medium, loud, x-loud)}}</td>
+                                        <td><code>&lt;speak&gt;&lt;prosody volume="soft"&gt;{{Hello}}&lt;/prosody&gt;&lt;/speak&gt;</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{Speed (x-slow, slow, medium, fast, x-fast)}}</td>
+                                        <td><code>&lt;speak&gt;&lt;prosody rate="slow"&gt;{{Hello}}&lt;/prosody&gt;&lt;/speak&gt;</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{Pitch (x-low, low, medium, high, x-high)}}</td>
+                                        <td><code>&lt;speak&gt;&lt;prosody pitch="low"&gt;{{Hello}}&lt;/prosody&gt;&lt;/speak&gt;</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{Emphasis (strong, moderate, reduced)}}</td>
+                                        <td><code>&lt;speak&gt;&lt;emphasis level="strong"&gt;{{Attention}}&lt;/emphasis&gt;&lt;/speak&gt;</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{Read as digits / date / time}}</td>
+                                        <td><code>&lt;speak&gt;&lt;say-as interpret-as="digits"&gt;1234&lt;/say-as&gt;&lt;/speak&gt;</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
                 <table id="table_cmd" class="table table-bordered table-condensed">
                     <thead>
                         <tr>

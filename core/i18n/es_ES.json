@@ -79,7 +79,23 @@
         "Type": "Tipo",
         "Parameters": "Parámetros",
         "Options": "Opciones",
-        "Action": "Acción"
+        "Action": "Acción",
+        "SSML Tags Help for Speak (TTS)": "Ayuda de etiquetas SSML para Hablar (TTS)",
+        "You can wrap your Speak (TTS) message in <speak>...</speak> to customize Alexa's voice, or use the Whisper command directly:": "Puedes envolver tu mensaje de Hablar (TTS) entre <speak>...</speak> para personalizar la voz de Alexa, o usar directamente el comando Susurrar:",
+        "Effect": "Efecto",
+        "SSML Tag Example": "Ejemplo de etiqueta SSML",
+        "Whispered voice": "Voz en susurro",
+        "Hello": "Hola",
+        "Pause": "Pausa",
+        "One": "Uno",
+        "Two": "Dos",
+        "Volume (x-soft, soft, medium, loud, x-loud)": "Volumen (x-soft, soft, medium, loud, x-loud)",
+        "Speed (x-slow, slow, medium, fast, x-fast)": "Velocidad (x-slow, slow, medium, fast, x-fast)",
+        "Pitch (x-low, low, medium, high, x-high)": "Tono (x-low, low, medium, high, x-high)",
+        "Emphasis (strong, moderate, reduced)": "Énfasis (strong, moderate, reduced)",
+        "Attention": "Atención",
+        "Read as digits / date / time": "Leer como dígitos / fecha / hora",
+        "You can wrap your Speak (TTS) message in &lt;speak&gt;...&lt;/speak&gt; to customize Alexa's voice, or use the Whisper command directly:": "Puedes envolver tu mensaje de Hablar (TTS) entre &lt;speak&gt;...&lt;/speak&gt; para personalizar la voz de Alexa, o usar directamente el comando Susurrar:"
     },
     "plugins/alexa_devices/desktop/js/alexa_devices.js": {
         "Devices synchronized successfully": "Dispositivos sincronizados con éxito",
@@ -112,7 +128,8 @@
         "Online": "En línea",
         "Offline": "Desconectado",
         "Idle": "Inactivo",
-        "No recent commands": "Sin comandos recientes"
+        "No recent commands": "Sin comandos recientes",
+        "Whisper": "Susurrar"
     },
     "plugins/alexa_devices/core/ajax/alexa_devices.ajax.php": {
         "401 - Unauthorized access": "401 - Acceso no autorizado",
