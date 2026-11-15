@@ -763,6 +763,10 @@ class alexa_devicesCmd extends cmd {
             'params' => $params
         );
 
-        return alexa_devices::callDaemon('/api/command', $data, 'POST');
+        $res = alexa_devices::callDaemon('/api/command', $data, 'POST');
+        if ($logicalId === 'set_volume' && isset($params['volume'])) {
+            $eqLogic->checkAndUpdateCmd('volume', $params['volume']);
+        }
+        return $res;
     }
 }
