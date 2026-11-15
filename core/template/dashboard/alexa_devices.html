@@ -59,9 +59,14 @@
 
         <!-- EJECUTAR CUALQUIER COMANDO DEL DISPOSITIVO -->
         <div class="alexa-quick-action-row">
-            <select class="form-control input-sm alexa-widget-cmd-select" title="{{Select command}}">
-                #cmd_options#
-            </select>
+            <div style="display: flex; gap: 4px; align-items: center;">
+                <select class="form-control input-sm alexa-widget-cmd-select" style="flex: 1;" title="{{Select command}}">
+                    #cmd_options#
+                </select>
+                <a href="#eqLogic_href#" class="btn btn-xs btn-default alexa-btn-help-link reportModeHidden" title="{{Command help & configuration}}">
+                    <i class="fas fa-question-circle"></i>
+                </a>
+            </div>
             <div class="input-group input-group-sm" style="margin-top: 4px;">
                 <input type="text" class="form-control alexa-input-text" placeholder="{{Text to speak (SSML supported)...}}" />
                 <input type="number" class="form-control alexa-input-slider" min="0" max="100" value="#volume#" style="display: none;" />
@@ -168,6 +173,19 @@
         .alexa-quick-action-row .alexa-widget-cmd-select option {
             background: #1b2430;
             color: #FFF;
+        }
+        .alexa-quick-action-row .alexa-btn-help-link {
+            background: rgba(0, 202, 250, 0.14) !important;
+            border: 1px solid rgba(0, 202, 250, 0.35) !important;
+            color: #00CAFA !important;
+            height: 26px;
+            line-height: 22px;
+            padding: 1px 7px;
+            border-radius: 4px !important;
+        }
+        .alexa-quick-action-row .alexa-btn-help-link:hover {
+            background: rgba(0, 202, 250, 0.28) !important;
+            color: #FFF !important;
         }
         .alexa-quick-action-row .form-control.alexa-input-text,
         .alexa-quick-action-row .form-control.alexa-input-slider {

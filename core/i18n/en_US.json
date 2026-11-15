@@ -397,7 +397,8 @@
         "Song, artist or playlist...": "Song, artist or playlist...",
         "Exact Alexa routine name...": "Exact Alexa routine name...",
         "0 - 100": "0 - 100",
-        "Parameter...": "Parameter..."
+        "Parameter...": "Parameter...",
+        "Command help & configuration": "Command help & configuration"
     },
     "plugins/alexa_devices/core/php/proxy.php": {
         "401 - Unauthorized access": "401 - Unauthorized access",
