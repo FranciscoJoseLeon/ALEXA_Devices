@@ -207,6 +207,12 @@ cache::set('alexa_devices_auth_token', $auth_token, 1800);
                 <?php echo $routinesUpdatedAt ? '{{Last updated}}: ' . htmlspecialchars($routinesUpdatedAt, ENT_QUOTES, 'UTF-8') : '{{Not yet synchronized}}'; ?>
             </div>
         </div>
+        <div class="form-group">
+            <div class="col-sm-9 col-sm-offset-3 help-block" style="margin-top:-6px;">
+                <i class="fas fa-lightbulb" style="color:#00CAFA;"></i>
+                {{Once synchronized, every Echo device gets these routines in its "Run Routine (List)" (routine_select) dropdown for Scenarios, Dashboard widgets, and testing. To trigger a Jeedom Scenario from Alexa by voice, use the device's "Last Voice Command" (last_command) as a Scenario trigger.}}
+            </div>
+        </div>
     </fieldset>
 
     <fieldset>

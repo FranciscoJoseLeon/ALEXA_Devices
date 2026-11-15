@@ -84,7 +84,8 @@
         "Are you sure you want to clear the saved Amazon session? You will need to sign in again.": "¿Estás seguro de que quieres borrar la sesión de Amazon guardada? Tendrás que iniciar sesión de nuevo.",
         "Error resetting session": "Error al restablecer la sesión",
         "Amazon session cleared. You can now sign in again.": "Sesión de Amazon borrada. Ya puedes volver a iniciar sesión.",
-        "None": "Ninguno"
+        "None": "Ninguno",
+        "Once synchronized, every Echo device gets these routines in its \"Run Routine (List)\" (routine_select) dropdown for Scenarios, Dashboard widgets, and testing. To trigger a Jeedom Scenario from Alexa by voice, use the device's \"Last Voice Command\" (last_command) as a Scenario trigger.": "Una vez sincronizadas, cada Echo recibe estas rutinas en su desplegable \"Ejecutar Rutina (Lista)\" (routine_select) para Escenarios, Dashboard y pruebas. Para lanzar un Escenario de Jeedom desde Alexa por voz, usa \"Último comando de voz\" (last_command) del Echo como disparador del escenario."
     },
     "plugins/alexa_devices/desktop/php/alexa_devices.php": {
         "401 - Unauthorized access": "401 - Acceso no autorizado",
@@ -195,7 +196,20 @@
         "Multi-room groups (WHA) and some third-party TVs do not support Speak or Whisper (Amazon restriction).": "Los grupos multi-habitación (WHA) y algunos televisores de terceros no admiten Hablar ni Susurrar (restricción de Amazon).",
         "Test available commands": "Prueba los comandos disponibles",
         "Select any command from the list to see what it does and test it directly on this device.": "Selecciona cualquier comando de la lista para ver qué hace y probarlo directamente en este dispositivo.",
-        "Test now": "Probar ahora"
+        "Test now": "Probar ahora",
+        "Jeedom → Alexa: Run Amazon Routines": "Jeedom → Alexa: Ejecutar Rutinas de Amazon",
+        "From Scenarios": "Desde Escenarios",
+        "Select the command \"Run Routine (List)\" (routine_select) and pick any synced routine from the dropdown without typing its name.": "Selecciona el comando \"Ejecutar Rutina (Lista)\" (routine_select) y elige cualquier rutina sincronizada del desplegable sin escribir su nombre.",
+        "From Dashboard / Tester": "Desde el Dashboard / Probador",
+        "Mark \"Run Routine (List)\" as Visible to get the routine dropdown right on the Dashboard widget, or test it above.": "Marca \"Ejecutar Rutina (Lista)\" como Visible para tener el desplegable en el widget del Dashboard, o pruébalo arriba.",
+        "Example": "Ejemplo",
+        "Alexa → Jeedom: Trigger Jeedom Scenarios": "Alexa → Jeedom: Lanzar Escenarios de Jeedom",
+        "By Voice (real-time)": "Por Voz (tiempo real)",
+        "Create a short routine in the Alexa app (e.g. \"Alexa, cinema mode\") and use this device's \"Last Voice Command\" (last_command) as a triggered Scenario event.": "Crea una rutina corta en la app Alexa (ej. \"Alexa, modo cine\") y usa \"Último comando de voz\" (last_command) de este equipo como disparador provocado del escenario.",
+        "Example Trigger": "Ejemplo de Disparador",
+        "Example Condition": "Ejemplo de Condición",
+        "Scheduled / Automatic Alexa Routines": "Rutinas automáticas de Alexa (sin voz)",
+        "Amazon does not push internal routine completions; expose a Jeedom virtual switch to Alexa or trigger on a monitored Echo state (e.g. dnd_status or volume).": "Amazon no envía aviso cuando termina una rutina automática; expón un interruptor virtual de Jeedom a Alexa o dispara el escenario con un estado del Echo (ej. dnd_status o volume)."
     },
     "plugins/alexa_devices/desktop/js/alexa_devices.js": {
         "Devices synchronized successfully": "Dispositivos sincronizados con éxito",

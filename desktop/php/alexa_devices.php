@@ -288,6 +288,30 @@ $eqLogics = eqLogic::byType($plugin->getId());
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-md-6">
+                            <div class="alexa-cap-card alexa-cap-voice">
+                                <div class="alexa-cap-header"><i class="fas fa-exchange-alt"></i> {{Jeedom → Alexa: Run Amazon Routines}}</div>
+                                <ul class="alexa-cap-list">
+                                    <li><strong>{{From Scenarios}}</strong> — {{Select the command "Run Routine (List)" (routine_select) and pick any synced routine from the dropdown without typing its name.}}</li>
+                                    <li><strong>{{From Dashboard / Tester}}</strong> — {{Mark "Run Routine (List)" as Visible to get the routine dropdown right on the Dashboard widget, or test it above.}}</li>
+                                    <li><strong>{{Example}}</strong> — <code>#[Salon][Echo Salón][Run Routine (List)]# → "Buenas noches"</code></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-12 col-md-6">
+                            <div class="alexa-cap-card alexa-cap-routines">
+                                <div class="alexa-cap-header"><i class="fas fa-bolt"></i> {{Alexa → Jeedom: Trigger Jeedom Scenarios}}</div>
+                                <ul class="alexa-cap-list">
+                                    <li><strong>{{By Voice (real-time)}}</strong> — {{Create a short routine in the Alexa app (e.g. "Alexa, cinema mode") and use this device's "Last Voice Command" (last_command) as a triggered Scenario event.}}</li>
+                                    <li><strong>{{Example Trigger}}</strong> — <code>#[Salon][Echo Salón][Last Voice Command]#</code></li>
+                                    <li><strong>{{Example Condition}}</strong> — <code>#[Salon][Echo Salón][Last Voice Command]# matches "/cinema mode/i"</code></li>
+                                    <li><strong>{{Scheduled / Automatic Alexa Routines}}</strong> — {{Amazon does not push internal routine completions; expose a Jeedom virtual switch to Alexa or trigger on a monitored Echo state (e.g. dnd_status or volume).}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
