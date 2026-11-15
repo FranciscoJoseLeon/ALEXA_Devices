@@ -520,7 +520,7 @@ class AlexaDaemon:
             f"&accountStatusPolicy=P1"
             f"&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select"
             f"&openid.mode=checkid_setup"
-            f"&openid.ns.oa2=http%3A%2F%2F{amazon_host}%2Fap%2Fext%2Foauth%2F2"
+            f"&openid.ns.oa2=http%3A%2F%2Fwww.amazon.com%2Fap%2Fext%2Foauth%2F2"
             f"&openid.oa2.client_id=device%3A{client_id}"
             f"&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0"
             f"&openid.oa2.response_type=code"
@@ -607,6 +607,13 @@ class AlexaDaemon:
                     return self._render_success_page()
                 else:
                     return web.Response(text="Error registrando en Amazon.", status=500, content_type="text/plain", charset="utf-8")
+            LOGGER.warning("Llegada a /ap/maplanding sin authorization_code: %s", target_url)
+            return web.Response(
+                text="Amazon no devolvió el código de autorización OAuth. Cierra esta ventana e inténtalo de nuevo.",
+                status=400,
+                content_type="text/plain",
+                charset="utf-8",
+            )
 
         # 2. Reenviar petición a Amazon
         proxy_session: aiohttp.ClientSession = self.active_proxy["session"]
