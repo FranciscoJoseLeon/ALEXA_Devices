@@ -26,6 +26,19 @@ $action = init('action', '');
 $target_url = init('url', '');
 $domain = init('domain', 'es');
 
+if (empty($target_url) && $action != 'start') {
+    $domain_suffix = ($domain == 'us') ? 'com' : (($domain == 'gb') ? 'co.uk' : $domain);
+    $query = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
+    parse_str($query, $parsed);
+    unset($parsed['auth_token']);
+    unset($parsed['action']);
+    unset($parsed['domain']);
+    unset($parsed['url']);
+    if (!empty($parsed)) {
+        $target_url = "https://www.amazon.{$domain_suffix}/errors/validateCaptcha?" . http_build_query($parsed);
+    }
+}
+
 $proxy_base = '/plugins/alexa_devices/core/php/proxy.php';
 if (!empty($auth_token)) {
     $proxy_base .= '?auth_token=' . urlencode($auth_token);

@@ -23,6 +23,7 @@ from typing import Any, Optional
 import aiohttp
 from aiohttp import web
 import httpx
+from yarl import URL
 
 try:
     from aioamazondevices.api import AmazonEchoApi
@@ -537,6 +538,8 @@ class AlexaDaemon:
                 pass
 
         cookie_jar = aiohttp.CookieJar(unsafe=True)
+        # Inyectar cookies anti-bot requeridas por Amazon (frc, map-md, amzn-app-id)
+        cookie_jar.update_cookies(temp_api._http_wrapper.cookies, URL(f"https://{amazon_host}"))
         proxy_session = aiohttp.ClientSession(cookie_jar=cookie_jar)
 
         self.active_proxy = {
@@ -544,6 +547,7 @@ class AlexaDaemon:
             "code_verifier": verifier,
             "serial": serial,
             "domain": domain,
+            "language": language,
             "client_id": client_id,
             "proxy_base": proxy_base,
             "amazon_host": amazon_host,
@@ -562,20 +566,25 @@ class AlexaDaemon:
             return web.Response(
                 text="No hay sesión de autenticación activa. Por favor, abre de nuevo la ventana oficial de Amazon.",
                 status=400,
-                content_type="text/plain; charset=utf-8",
+                content_type="text/plain",
+                charset="utf-8",
             )
 
         target_url = request.query.get("url", "")
         proxy_base = self.active_proxy.get("proxy_base", "/plugins/alexa_devices/core/php/proxy.php")
         domain = self.active_proxy.get("domain", "es")
+        language = self.active_proxy.get("language", "es_ES")
         amazon_host = self.active_proxy.get("amazon_host", f"www.amazon.{domain}")
 
         if not target_url:
             path = request.query.get("path", "")
             if path:
                 target_url = f"https://{amazon_host}/{path.lstrip('/')}"
+            elif "amzn" in request.query:
+                # Captcha validation / Seguir comprando fallback
+                target_url = f"https://{amazon_host}/errors/validateCaptcha?{request.query_string}"
             else:
-                return web.Response(text="URL no especificada en el proxy.", status=400, content_type="text/plain; charset=utf-8")
+                return web.Response(text="URL no especificada en el proxy.", status=400, content_type="text/plain", charset="utf-8")
 
         # 1. Comprobar si hemos llegado a /ap/maplanding con el código de retorno
         if "/ap/maplanding" in target_url:
@@ -589,7 +598,7 @@ class AlexaDaemon:
                 if success:
                     return self._render_success_page()
                 else:
-                    return web.Response(text="Error registrando en Amazon.", status=500, content_type="text/plain; charset=utf-8")
+                    return web.Response(text="Error registrando en Amazon.", status=500, content_type="text/plain", charset="utf-8")
 
         # 2. Reenviar petición a Amazon
         proxy_session: aiohttp.ClientSession = self.active_proxy["session"]
@@ -597,13 +606,20 @@ class AlexaDaemon:
 
         headers = {}
         for k, v in request.headers.items():
-            if k.lower() in ("host", "content-length", "accept-encoding"):
+            if k.lower() in ("host", "content-length", "accept-encoding", "cookie"):
                 continue
             headers[k] = v
 
         parsed_target = urllib.parse.urlparse(target_url)
         headers["Host"] = parsed_target.netloc or amazon_host
-        headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+        headers["Accept-Language"] = f"{language},{language[:2]};q=0.9,en-US;q=0.8,en;q=0.7"
+        headers["Upgrade-Insecure-Requests"] = "1"
+        headers["Sec-Fetch-Dest"] = "document"
+        headers["Sec-Fetch-Mode"] = "navigate"
+        headers["Sec-Fetch-Site"] = "none"
+        headers["Sec-Fetch-User"] = "?1"
 
         body = None
         if method in ("POST", "PUT", "PATCH"):
@@ -633,7 +649,7 @@ class AlexaDaemon:
                             if success:
                                 return self._render_success_page()
                             else:
-                                return web.Response(text="Error al registrar en Amazon.", status=500)
+                                return web.Response(text="Error al registrar en Amazon.", status=500, content_type="text/plain", charset="utf-8")
 
                     if location:
                         if location.startswith("/"):
@@ -675,7 +691,7 @@ class AlexaDaemon:
 
         except Exception as err:
             LOGGER.error("Error en proxy relay hacia %s: %s", target_url, err)
-            return web.Response(text=f"Error en proxy: {err}", status=502, content_type="text/plain; charset=utf-8")
+            return web.Response(text=f"Error en proxy: {err}", status=502, content_type="text/plain", charset="utf-8")
 
     def _rewrite_amazon_html(self, html: str, amazon_host: str, proxy_base: str) -> str:
         """Adapta enlaces y formularios en el HTML de Amazon para canalizarlos por el proxy."""
@@ -696,12 +712,21 @@ class AlexaDaemon:
     var sep = pBase.indexOf('?') !== -1 ? '&' : '?';
     document.addEventListener("submit", function(e) {{
         var f = e.target;
-        if (f && f.action && f.action.indexOf("proxy.php") === -1 && f.action.indexOf("proxy/relay") === -1) {{
-            var fullUrl = f.action;
-            if (fullUrl.indexOf("http") !== 0) {{
-                fullUrl = "https://" + aHost + (fullUrl.charAt(0) === "/" ? "" : "/") + fullUrl;
+        if (f) {{
+            var fullUrl = f.getAttribute("action") || f.action || "";
+            if (!fullUrl || fullUrl.indexOf("http") !== 0) {{
+                fullUrl = "https://" + aHost + (fullUrl && fullUrl.charAt(0) === "/" ? "" : "/") + (fullUrl || "");
             }}
-            f.action = pBase + sep + "url=" + encodeURIComponent(fullUrl);
+            if ((f.method || "get").toLowerCase() === "get") {{
+                e.preventDefault();
+                var params = new URLSearchParams(new FormData(f));
+                var target = fullUrl.split("?")[0] + "?" + params.toString();
+                window.location.href = pBase + sep + "url=" + encodeURIComponent(target);
+                return;
+            }}
+            if (f.action.indexOf("proxy.php") === -1 && f.action.indexOf("proxy/relay") === -1) {{
+                f.action = pBase + sep + "url=" + encodeURIComponent(fullUrl);
+            }}
         }}
     }}, true);
     document.addEventListener("click", function(e) {{
