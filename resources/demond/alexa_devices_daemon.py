@@ -587,6 +587,13 @@ class AlexaDaemon:
             else:
                 return web.Response(text="URL no especificada en el proxy.", status=400, content_type="text/plain", charset="utf-8")
 
+        # Seguridad: evitar URLs doblemente envueltas por el proxy
+        if "/plugins/alexa_devices/core/php/proxy.php" in target_url:
+            inner_parsed = urllib.parse.urlparse(target_url)
+            inner_params = urllib.parse.parse_qs(inner_parsed.query)
+            if "url" in inner_params and inner_params["url"][0]:
+                target_url = inner_params["url"][0]
+
         # 1. Comprobar si hemos llegado a /ap/maplanding con el código de retorno
         if "/ap/maplanding" in target_url:
             parsed = urllib.parse.urlparse(target_url)
@@ -724,15 +731,25 @@ class AlexaDaemon:
     def _rewrite_amazon_html(self, html: str, amazon_host: str, proxy_base: str, current_url: str = "") -> str:
         """Adapta enlaces, formularios y peticiones AJAX de la página de Amazon para que pasen por el proxy."""
         sep = "&" if "?" in proxy_base else "?"
-        html = html.replace(f'action="https://{amazon_host}/', f'action="{proxy_base}{sep}url=https://{amazon_host}/')
-        html = html.replace(f"action='https://{amazon_host}/", f"action='{proxy_base}{sep}url=https://{amazon_host}/")
-        html = html.replace('action="/', f'action="{proxy_base}{sep}url=https://{amazon_host}/')
-        html = html.replace("action='/", f"action='{proxy_base}{sep}url=https://{amazon_host}/")
+        base_url = current_url or f"https://{amazon_host}/"
 
-        html = html.replace('href="/ap/', f'href="{proxy_base}{sep}url=https://{amazon_host}/ap/')
-        html = html.replace('href="/ax/', f'href="{proxy_base}{sep}url=https://{amazon_host}/ax/')
-        html = html.replace(f'href="https://{amazon_host}/ap/', f'href="{proxy_base}{sep}url=https://{amazon_host}/ap/')
-        html = html.replace(f'href="https://{amazon_host}/ax/', f'href="{proxy_base}{sep}url=https://{amazon_host}/ax/')
+        def _rewrite_attr(match: re.Match) -> str:
+            attr, quote, val = match.group(1), match.group(2), match.group(3)
+            if not val or proxy_base in val or val.startswith(("#", "javascript:", "mailto:", "tel:", "data:")):
+                return match.group(0)
+            if attr.lower() == "href" and not (
+                val.startswith(("/ap/", "/ax/", f"https://{amazon_host}/ap/", f"https://{amazon_host}/ax/"))
+            ):
+                return match.group(0)
+            full_url = urllib.parse.urljoin(base_url, val)
+            return f"{attr}={quote}{proxy_base}{sep}url={full_url}{quote}"
+
+        html = re.sub(
+            r'\b(action|href)\s*=\s*(["\'])([^"\']*)\2',
+            _rewrite_attr,
+            html,
+            flags=re.IGNORECASE,
+        )
 
         cfg = json.dumps({"p": proxy_base, "h": amazon_host, "c": current_url or f"https://{amazon_host}/"})
         helper_script = """
@@ -815,6 +832,16 @@ class AlexaDaemon:
         e.preventDefault();
         window.location.href = rw(raw);
     }, true);
+    document.addEventListener('change', function (e) {
+        var el = e.target;
+        if (!el || el.type !== 'checkbox') return;
+        var id = (el.id || '') + ' ' + (el.name || '');
+        if (/show[-_]?password/i.test(id)) {
+            var form = el.form || document;
+            var pwd = form.querySelector('input[name="password"], input#ap_password');
+            if (pwd) pwd.type = el.checked ? 'text' : 'password';
+        }
+    });
 })();
 </script>
 """ % cfg
