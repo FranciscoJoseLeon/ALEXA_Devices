@@ -55,6 +55,19 @@ $('#bt_showPluginLog').on('click', function () {
     }
 });
 
+function alexaGetMessagePlaceholder(logicalId) {
+    var map = {
+        speak: '{{Text to speak (supports SSML)...}}',
+        whisper: '{{Text to whisper...}}',
+        announcement: '{{Announcement message...}}',
+        text_command: '{{Voice command (e.g. turn off lights)...}}',
+        music: '{{Song, artist or radio station...}}',
+        sound: '{{Sound ID (e.g. amzn_sfx_doorbell_chime_01)...}}',
+        routine: '{{Exact Amazon routine name...}}'
+    };
+    return map[logicalId] || '{{Value...}}';
+}
+
 function addCmdToTable(_cmd) {
     if (!isset(_cmd)) {
         var _cmd = {configuration: {}};
@@ -75,9 +88,61 @@ function addCmdToTable(_cmd) {
     tr += '</td>';
 
     tr += '<td>';
-    if (_cmd.subType == 'slider') {
-        tr += '<input class="cmdAttr form-control input-sm" data-l1key="configuration" data-l2key="minValue" placeholder="{{Min}}" style="width: 45%; display: inline-block;"> ';
-        tr += '<input class="cmdAttr form-control input-sm" data-l1key="configuration" data-l2key="maxValue" placeholder="{{Max}}" style="width: 45%; display: inline-block;">';
+    if (_cmd.type == 'info') {
+        var stateVal = (_cmd.state !== undefined && _cmd.state !== null && _cmd.state !== '') ? String(_cmd.state) : '—';
+        var unit = (_cmd.unite) ? ' ' + _cmd.unite : '';
+        var dateTitle = (_cmd.valueDate) ? ' title="{{Last updated}}: ' + init(_cmd.valueDate) + '"' : '';
+        if (_cmd.subType == 'binary') {
+            var isOne = (stateVal === '1' || stateVal === 'true');
+            var badgeCls = isOne ? 'label-success' : 'label-default';
+            if (_cmd.logicalId === 'dnd_status') {
+                badgeCls = isOne ? 'label-warning' : 'label-default';
+                stateVal = isOne ? '{{ON}} (1)' : '{{OFF}} (0)';
+            } else if (_cmd.logicalId === 'status') {
+                stateVal = isOne ? '{{Online}} (1)' : '{{Offline}} (0)';
+            }
+            tr += '<span class="label ' + badgeCls + ' alexa-cmd-state"' + dateTitle + ' style="font-size:12px;">' + $('<span>').text(stateVal).html() + '</span>';
+        } else {
+            tr += '<span class="label label-primary alexa-cmd-state"' + dateTitle + ' style="font-size:12px; display:inline-block; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:middle;">' + $('<span>').text(stateVal + unit).html() + '</span>';
+        }
+    } else if (_cmd.subType == 'slider') {
+        tr += '<div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">';
+        tr += '<input class="cmdAttr form-control input-sm" data-l1key="configuration" data-l2key="minValue" placeholder="{{Min}}" style="width:55px;" title="{{Min}}">';
+        tr += '<input class="cmdAttr form-control input-sm" data-l1key="configuration" data-l2key="maxValue" placeholder="{{Max}}" style="width:55px;" title="{{Max}}">';
+        if (is_numeric(_cmd.id)) {
+            tr += '<input type="number" class="form-control input-sm alexa-quick-val" data-subtype="slider" min="' + init(_cmd.configuration.minValue, 0) + '" max="' + init(_cmd.configuration.maxValue, 100) + '" placeholder="0-100" style="width:78px;">';
+            tr += '<a class="btn btn-primary btn-xs btn-alexa-exec" title="{{Set value}}"><i class="fas fa-play"></i></a>';
+        }
+        tr += '</div>';
+    } else if (_cmd.subType == 'select') {
+        tr += '<input type="hidden" class="cmdAttr" data-l1key="configuration" data-l2key="listValue">';
+        var listStr = init(_cmd.configuration.listValue);
+        if (listStr) {
+            tr += '<div style="display:flex; gap:4px; align-items:center;">';
+            tr += '<select class="form-control input-sm alexa-quick-val" data-subtype="select" style="max-width:240px;">';
+            var items = listStr.split(';');
+            for (var i = 0; i < items.length; i++) {
+                if (!items[i]) continue;
+                var pair = items[i].split('|');
+                var optVal = pair[0];
+                var optLbl = (pair.length > 1) ? pair[1] : pair[0];
+                tr += '<option value="' + $('<span>').text(optVal).html() + '">' + $('<span>').text(optLbl).html() + '</option>';
+            }
+            tr += '</select>';
+            if (is_numeric(_cmd.id)) {
+                tr += '<a class="btn btn-primary btn-xs btn-alexa-exec" title="{{Execute}}"><i class="fas fa-play"></i></a>';
+            }
+            tr += '</div>';
+        } else {
+            tr += '<span class="text-muted" style="font-size:11px;">{{No options synchronized yet}}</span>';
+        }
+    } else if (_cmd.subType == 'message') {
+        if (is_numeric(_cmd.id)) {
+            tr += '<div style="display:flex; gap:4px; align-items:center;">';
+            tr += '<input type="text" class="form-control input-sm alexa-quick-val" data-subtype="message" placeholder="' + alexaGetMessagePlaceholder(init(_cmd.logicalId)) + '" style="min-width:180px;">';
+            tr += '<a class="btn btn-primary btn-xs btn-alexa-exec" title="{{Execute}}"><i class="fas fa-play"></i></a>';
+            tr += '</div>';
+        }
     }
     tr += '</td>';
 
@@ -97,3 +162,39 @@ function addCmdToTable(_cmd) {
     $('#table_cmd tbody').append(tr);
     $('#table_cmd tbody tr:last').setValues(_cmd, '.cmdAttr');
 }
+
+$('#table_cmd').off('click', '.btn-alexa-exec').on('click', '.btn-alexa-exec', function () {
+    var $tr = $(this).closest('tr.cmd');
+    var cmdId = $tr.attr('data-cmd_id');
+    var $input = $tr.find('.alexa-quick-val');
+    var subType = $input.attr('data-subtype');
+    var val = $input.val();
+    var valueObj = {};
+    if (subType === 'slider') {
+        if (val === '' || val === null) return;
+        valueObj = { slider: val };
+    } else if (subType === 'select') {
+        if (val === '' || val === null) return;
+        valueObj = { select: val };
+    } else if (subType === 'message') {
+        if (!val) { $input.focus(); return; }
+        valueObj = { title: '', message: val };
+    }
+    jeedom.cmd.execute({
+        id: cmdId,
+        value: valueObj,
+        error: function (error) {
+            $('#div_alert').showAlert({ message: error.message || error, level: 'danger' });
+        },
+        success: function () {
+            $('#div_alert').showAlert({ message: '{{Command executed}}', level: 'success' });
+        }
+    });
+});
+
+$('#table_cmd').off('keypress', '.alexa-quick-val').on('keypress', '.alexa-quick-val', function (e) {
+    if (e.which === 13) {
+        e.preventDefault();
+        $(this).closest('tr.cmd').find('.btn-alexa-exec').click();
+    }
+});
