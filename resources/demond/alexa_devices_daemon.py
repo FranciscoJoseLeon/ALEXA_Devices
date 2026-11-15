@@ -490,7 +490,7 @@ class AlexaDaemon:
     async def handle_proxy_start(self, request: web.Request) -> web.Response:
         """Inicia una sesión de proxy web para el login oficial de Amazon."""
         domain = request.query.get("domain", "es")
-        proxy_base = request.query.get("proxy_base", "plugins/alexa_devices/core/php/proxy.php")
+        proxy_base = request.query.get("proxy_base", "/plugins/alexa_devices/core/php/proxy.php")
 
         base_handle = self.DOMAIN_HANDLES.get(domain, f"_{domain}")
         language = self.DOMAIN_LANGUAGES.get(domain, "es_ES")
@@ -566,7 +566,7 @@ class AlexaDaemon:
             )
 
         target_url = request.query.get("url", "")
-        proxy_base = self.active_proxy.get("proxy_base", "plugins/alexa_devices/core/php/proxy.php")
+        proxy_base = self.active_proxy.get("proxy_base", "/plugins/alexa_devices/core/php/proxy.php")
         domain = self.active_proxy.get("domain", "es")
         amazon_host = self.active_proxy.get("amazon_host", f"www.amazon.{domain}")
 

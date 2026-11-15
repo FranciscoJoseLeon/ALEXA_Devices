@@ -26,7 +26,7 @@ $action = init('action', '');
 $target_url = init('url', '');
 $domain = init('domain', 'es');
 
-$proxy_base = 'plugins/alexa_devices/core/php/proxy.php';
+$proxy_base = '/plugins/alexa_devices/core/php/proxy.php';
 if (!empty($auth_token)) {
     $proxy_base .= '?auth_token=' . urlencode($auth_token);
 }

@@ -148,7 +148,7 @@ cache::set('alexa_devices_auth_token', $auth_token, 1800);
     $('#btn_open_amazon_proxy').on('click', function () {
         var domain = $('#modal_domain').val();
         var authToken = '<?php echo $auth_token; ?>';
-        var proxyUrl = 'plugins/alexa_devices/core/php/proxy.php?action=start&domain=' + encodeURIComponent(domain) + '&auth_token=' + encodeURIComponent(authToken);
+        var proxyUrl = '/plugins/alexa_devices/core/php/proxy.php?action=start&domain=' + encodeURIComponent(domain) + '&auth_token=' + encodeURIComponent(authToken);
 
         var width = 600;
         var height = 750;
