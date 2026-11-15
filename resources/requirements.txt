@@ -1,4 +1,4 @@
-aioamazondevices>=17.2.7
+aioamazondevices>=17.2.12
 aiohttp>=3.9.5
 httpx[http2]>=0.27.0
 requests>=2.31.0
