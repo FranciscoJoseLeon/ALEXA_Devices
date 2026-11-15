@@ -351,7 +351,20 @@
         "Good Night": "Good Night",
         "I'm Home": "I'm Home",
         "Clean Up": "Clean Up",
-        "Run Routine (List)": "Run Routine (List)"
+        "Run Routine (List)": "Run Routine (List)",
+        "Select command": "Select command",
+        "Execute command": "Execute command",
+        "Text to speak (SSML supported)...": "Text to speak (SSML supported)...",
+        "Text to whisper...": "Text to whisper...",
+        "Announcement text...": "Announcement text...",
+        "Voice command (e.g. turn on kitchen light)...": "Voice command (e.g. turn on kitchen light)...",
+        "Sound ID (e.g. amzn_sfx_doorbell_chime_01)...": "Sound ID (e.g. amzn_sfx_doorbell_chime_01)...",
+        "weather, traffic, joke, time, calendar_today...": "weather, traffic, joke, time, calendar_today...",
+        "Song, artist or playlist...": "Song, artist or playlist...",
+        "Exact Alexa routine name...": "Exact Alexa routine name...",
+        "0 - 100": "0 - 100",
+        "Parameter...": "Parameter...",
+        "Last command heard by Alexa": "Last command heard by Alexa"
     },
     "plugins/alexa_devices/core/ajax/alexa_devices.ajax.php": {
         "401 - Unauthorized access": "401 - Unauthorized access",
@@ -372,7 +385,19 @@
         "Last command heard by Alexa": "Last command heard by Alexa",
         "Command or speak...": "Command or speak...",
         "Execute as voice command": "Execute as voice command",
-        "Text to speech (TTS)": "Text to speech (TTS)"
+        "Text to speech (TTS)": "Text to speech (TTS)",
+        "Select command": "Select command",
+        "Execute command": "Execute command",
+        "Text to speak (SSML supported)...": "Text to speak (SSML supported)...",
+        "Text to whisper...": "Text to whisper...",
+        "Announcement text...": "Announcement text...",
+        "Voice command (e.g. turn on kitchen light)...": "Voice command (e.g. turn on kitchen light)...",
+        "Sound ID (e.g. amzn_sfx_doorbell_chime_01)...": "Sound ID (e.g. amzn_sfx_doorbell_chime_01)...",
+        "weather, traffic, joke, time, calendar_today...": "weather, traffic, joke, time, calendar_today...",
+        "Song, artist or playlist...": "Song, artist or playlist...",
+        "Exact Alexa routine name...": "Exact Alexa routine name...",
+        "0 - 100": "0 - 100",
+        "Parameter...": "Parameter..."
     },
     "plugins/alexa_devices/core/php/proxy.php": {
         "401 - Unauthorized access": "401 - Unauthorized access",

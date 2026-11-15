@@ -57,16 +57,17 @@
             <span class="alexa-last-cmd-text">#last_command#</span>
         </div>
 
-        <!-- ENVIAR ORDEN RÁPIDA O TTS -->
+        <!-- EJECUTAR CUALQUIER COMANDO DEL DISPOSITIVO -->
         <div class="alexa-quick-action-row">
-            <div class="input-group input-group-sm">
-                <input type="text" class="form-control alexa-input-text" placeholder="{{Command or speak...}}" />
+            <select class="form-control input-sm alexa-widget-cmd-select" title="{{Select command}}">
+                #cmd_options#
+            </select>
+            <div class="input-group input-group-sm" style="margin-top: 4px;">
+                <input type="text" class="form-control alexa-input-text" placeholder="{{Text to speak (SSML supported)...}}" />
+                <input type="number" class="form-control alexa-input-slider" min="0" max="100" value="#volume#" style="display: none;" />
                 <div class="input-group-btn">
-                    <button class="btn btn-info alexa-btn-send-cmd" data-cmd_id="#text_command_id#" title="{{Execute as voice command}}">
-                        <i class="fas fa-terminal"></i>
-                    </button>
-                    <button class="btn btn-default alexa-btn-send-speak" data-cmd_id="#speak_id#" title="{{Text to speech (TTS)}}">
-                        <i class="fas fa-comment-alt"></i>
+                    <button type="button" class="btn btn-info alexa-btn-run-selected" title="{{Execute command}}">
+                        <i class="fas fa-play"></i>
                     </button>
                 </div>
             </div>
@@ -155,7 +156,21 @@
             text-overflow: ellipsis;
             color: #BBEAFB;
         }
-        .alexa-quick-action-row .form-control {
+        .alexa-quick-action-row .alexa-widget-cmd-select {
+            background: rgba(255, 255, 255, 0.12) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #FFF !important;
+            border-radius: 4px !important;
+            font-size: 11px !important;
+            height: 26px !important;
+            padding: 2px 6px !important;
+        }
+        .alexa-quick-action-row .alexa-widget-cmd-select option {
+            background: #1b2430;
+            color: #FFF;
+        }
+        .alexa-quick-action-row .form-control.alexa-input-text,
+        .alexa-quick-action-row .form-control.alexa-input-slider {
             background: rgba(255, 255, 255, 0.1) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             color: #FFF !important;
@@ -164,44 +179,74 @@
     </style>
 
     <script>
-        // Manejador de botones multimedia
-        $('.alexa-widget[data-eqLogic_id=#id#] .cmd-btn-alexa').off('click').on('click', function() {
-            var cmdId = $(this).attr('data-cmd_id');
-            if (cmdId) {
-                jeedom.cmd.execute({id: cmdId});
-            }
-        });
+        (function() {
+            var $widget = $('.alexa-widget[data-eqLogic_id=#id#]');
 
-        // Manejador del slider de volumen
-        $('.alexa-widget[data-eqLogic_id=#id#] .alexa-vol-slider').off('change').on('change', function() {
-            var cmdId = $(this).attr('data-cmd_id');
-            var val = $(this).val();
-            $(this).siblings('.alexa-vol-val').text(val + '%');
-            if (cmdId) {
-                jeedom.cmd.execute({id: cmdId, value: {slider: val}});
+            function syncAlexaWidgetCmdInput() {
+                var $opt = $widget.find('.alexa-widget-cmd-select option:selected');
+                var sub = $opt.attr('data-subtype') || 'other';
+                var ph = $opt.attr('data-placeholder') || '';
+                var $txt = $widget.find('.alexa-input-text');
+                var $sld = $widget.find('.alexa-input-slider');
+                $txt.hide();
+                $sld.hide();
+                if (sub === 'message') {
+                    $txt.attr('placeholder', ph).show();
+                } else if (sub === 'slider') {
+                    $sld.show();
+                }
             }
-        });
 
-        // Envío de comando por texto
-        $('.alexa-widget[data-eqLogic_id=#id#] .alexa-btn-send-cmd').off('click').on('click', function() {
-            var input = $(this).closest('.alexa-quick-action-row').find('.alexa-input-text');
-            var text = input.val().trim();
-            var cmdId = $(this).attr('data-cmd_id');
-            if (text && cmdId) {
-                jeedom.cmd.execute({id: cmdId, value: {message: text}});
-                input.val('');
-            }
-        });
+            syncAlexaWidgetCmdInput();
 
-        // Envío de TTS Hablar
-        $('.alexa-widget[data-eqLogic_id=#id#] .alexa-btn-send-speak').off('click').on('click', function() {
-            var input = $(this).closest('.alexa-quick-action-row').find('.alexa-input-text');
-            var text = input.val().trim();
-            var cmdId = $(this).attr('data-cmd_id');
-            if (text && cmdId) {
-                jeedom.cmd.execute({id: cmdId, value: {message: text}});
-                input.val('');
+            $widget.find('.alexa-widget-cmd-select').off('change').on('change', function() {
+                syncAlexaWidgetCmdInput();
+            });
+
+            // Manejador de botones multimedia
+            $widget.find('.cmd-btn-alexa').off('click').on('click', function() {
+                var cmdId = $(this).attr('data-cmd_id');
+                if (cmdId) {
+                    jeedom.cmd.execute({id: cmdId});
+                }
+            });
+
+            // Manejador del slider de volumen
+            $widget.find('.alexa-vol-slider').off('change').on('change', function() {
+                var cmdId = $(this).attr('data-cmd_id');
+                var val = $(this).val();
+                $(this).siblings('.alexa-vol-val').text(val + '%');
+                if (cmdId) {
+                    jeedom.cmd.execute({id: cmdId, value: {slider: val}});
+                }
+            });
+
+            function runSelectedWidgetCmd() {
+                var $opt = $widget.find('.alexa-widget-cmd-select option:selected');
+                var cmdId = $opt.val();
+                var sub = $opt.attr('data-subtype') || 'other';
+                if (!cmdId) return;
+                if (sub === 'message') {
+                    var $txt = $widget.find('.alexa-input-text');
+                    var text = $txt.val().trim();
+                    if (!text) return;
+                    jeedom.cmd.execute({id: cmdId, value: {title: '', message: text}});
+                    $txt.val('');
+                } else if (sub === 'slider') {
+                    var sVal = $widget.find('.alexa-input-slider').val();
+                    jeedom.cmd.execute({id: cmdId, value: {slider: sVal}});
+                } else {
+                    jeedom.cmd.execute({id: cmdId});
+                }
             }
-        });
+
+            $widget.find('.alexa-btn-run-selected').off('click').on('click', runSelectedWidgetCmd);
+            $widget.find('.alexa-input-text').off('keypress').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    runSelectedWidgetCmd();
+                }
+            });
+        })();
     </script>
 </div>

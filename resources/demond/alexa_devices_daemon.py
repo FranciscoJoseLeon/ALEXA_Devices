@@ -35,7 +35,11 @@ try:
         CannotRetrieveData,
         CannotSetFeature,
     )
-    from aioamazondevices.structures import AmazonSaveDataConfig, AmazonDevice
+    from aioamazondevices.structures import (
+        AmazonSaveDataConfig,
+        AmazonDevice,
+        AmazonMediaControls,
+    )
 except ImportError as err:
     print(f"Error importing aioamazondevices: {err}", file=sys.stderr)
     print("Please install requirements: pip install -r requirements.txt", file=sys.stderr)
@@ -1022,8 +1026,21 @@ body, h1, h2, h3, h4, p, label, span, div, a, input, button, .a-text-bold {
                 await self.api.set_device_volume(device, vol)
 
             elif action == "media_command":
-                cmd = params.get("command")  # "play", "pause", "next", "previous"
-                await self.api.send_media_command(device, cmd)
+                cmd = str(params.get("command", "")).strip().lower()
+                media_map = {
+                    "play": AmazonMediaControls.Play,
+                    "stop": AmazonMediaControls.Stop,
+                    "pause": AmazonMediaControls.Pause,
+                    "next": AmazonMediaControls.Next,
+                    "previous": AmazonMediaControls.Previous,
+                    "rewind": AmazonMediaControls.Rewind,
+                    "fast_forward": AmazonMediaControls.FastForward,
+                    "forward": AmazonMediaControls.FastForward,
+                }
+                media_enum = media_map.get(cmd)
+                if media_enum is None:
+                    return web.json_response({"error": f"Comando multimedia desconocido: {cmd}"}, status=400)
+                await self.api.send_media_command(device, media_enum)
 
             elif action == "dnd":
                 enable = bool(params.get("enable", True))

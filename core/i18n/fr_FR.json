@@ -352,7 +352,20 @@
         "Good Night": "Bonne nuit",
         "I'm Home": "Je suis rentré",
         "Clean Up": "Ranger",
-        "Run Routine (List)": "Exécuter une Routine (Liste)"
+        "Run Routine (List)": "Exécuter une Routine (Liste)",
+        "Select command": "Sélectionner une commande",
+        "Execute command": "Exécuter la commande",
+        "Text to speak (SSML supported)...": "Texte à prononcer (SSML accepté)...",
+        "Text to whisper...": "Texte en chuchotement...",
+        "Announcement text...": "Texte de l’annonce...",
+        "Voice command (e.g. turn on kitchen light)...": "Commande vocale (ex. allume lumière cuisine)...",
+        "Sound ID (e.g. amzn_sfx_doorbell_chime_01)...": "ID du son (ex. amzn_sfx_doorbell_chime_01)...",
+        "weather, traffic, joke, time, calendar_today...": "weather, traffic, joke, time, calendar_today...",
+        "Song, artist or playlist...": "Chanson, artiste ou playlist...",
+        "Exact Alexa routine name...": "Nom exact de la routine Alexa...",
+        "0 - 100": "0 - 100",
+        "Parameter...": "Paramètre...",
+        "Last command heard by Alexa": "Dernière commande entendue par Alexa"
     },
     "plugins/alexa_devices/core/ajax/alexa_devices.ajax.php": {
         "401 - Unauthorized access": "401 - Accès non autorisé",
@@ -373,7 +386,19 @@
         "Last command heard by Alexa": "Dernière commande entendue par Alexa",
         "Command or speak...": "Commande ou message...",
         "Execute as voice command": "Exécuter comme commande vocale",
-        "Text to speech (TTS)": "Synthèse vocale (TTS)"
+        "Text to speech (TTS)": "Synthèse vocale (TTS)",
+        "Select command": "Sélectionner une commande",
+        "Execute command": "Exécuter la commande",
+        "Text to speak (SSML supported)...": "Texte à prononcer (SSML accepté)...",
+        "Text to whisper...": "Texte en chuchotement...",
+        "Announcement text...": "Texte de l’annonce...",
+        "Voice command (e.g. turn on kitchen light)...": "Commande vocale (ex. allume lumière cuisine)...",
+        "Sound ID (e.g. amzn_sfx_doorbell_chime_01)...": "ID du son (ex. amzn_sfx_doorbell_chime_01)...",
+        "weather, traffic, joke, time, calendar_today...": "weather, traffic, joke, time, calendar_today...",
+        "Song, artist or playlist...": "Chanson, artiste ou playlist...",
+        "Exact Alexa routine name...": "Nom exact de la routine Alexa...",
+        "0 - 100": "0 - 100",
+        "Parameter...": "Paramètre..."
     },
     "plugins/alexa_devices/core/php/proxy.php": {
         "401 - Unauthorized access": "401 - Accès non autorisé",

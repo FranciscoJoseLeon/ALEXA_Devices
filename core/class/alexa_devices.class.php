@@ -497,7 +497,35 @@ class alexa_devices extends eqLogic {
             $replace['#' . $c . '_id#'] = is_object($cmdObj) ? $cmdObj->getId() : '';
         }
 
-        return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'alexa_devices', 'alexa_devices')));
+        $placeholders = array(
+            'speak' => __('Text to speak (SSML supported)...', __FILE__),
+            'whisper' => __('Text to whisper...', __FILE__),
+            'announcement' => __('Announcement text...', __FILE__),
+            'text_command' => __('Voice command (e.g. turn on kitchen light)...', __FILE__),
+            'sound' => __('Sound ID (e.g. amzn_sfx_doorbell_chime_01)...', __FILE__),
+            'info_skill' => __('weather, traffic, joke, time, calendar_today...', __FILE__),
+            'play_music' => __('Song, artist or playlist...', __FILE__),
+            'routine' => __('Exact Alexa routine name...', __FILE__),
+            'set_volume' => __('0 - 100', __FILE__),
+        );
+        $cmdOptionsHtml = '';
+        $allActions = $this->getCmd('action');
+        if (is_array($allActions)) {
+            foreach ($allActions as $actCmd) {
+                $lid = $actCmd->getLogicalId();
+                $sub = $actCmd->getSubType();
+                $ph = isset($placeholders[$lid]) ? $placeholders[$lid] : __('Parameter...', __FILE__);
+                $selected = ($lid === 'speak') ? ' selected' : '';
+                $cmdOptionsHtml .= '<option value="' . intval($actCmd->getId()) . '" data-subtype="' . htmlspecialchars($sub) . '" data-logical_id="' . htmlspecialchars($lid) . '" data-placeholder="' . htmlspecialchars($ph) . '"' . $selected . '>' . htmlspecialchars($actCmd->getName()) . '</option>';
+            }
+        }
+        $replace['#cmd_options#'] = $cmdOptionsHtml;
+
+        $template = translate::exec(
+            getTemplate('core', $version, 'alexa_devices', 'alexa_devices'),
+            'plugins/alexa_devices/core/template/' . $version . '/alexa_devices.html'
+        );
+        return $this->postToHtml($_version, template_replace($replace, $template));
     }
 
     public function createDefaultCommands($device = null) {
