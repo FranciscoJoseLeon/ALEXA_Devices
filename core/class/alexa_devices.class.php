@@ -363,6 +363,40 @@ class alexa_devices extends eqLogic {
 
         // 12. Action: Restart Echo device
         $this->getOrCreateCmd('restart', 'action', 'other', __('Restart Echo', __FILE__), false);
+
+        // 13. Action: Play built-in Amazon sound
+        $this->getOrCreateCmd('sound', 'action', 'message', __('Play Sound', __FILE__), false);
+
+        // 14. Action: Play music / radio
+        $this->getOrCreateCmd('music', 'action', 'message', __('Play Music', __FILE__), false);
+
+        // 15. Action: Info skill (dropdown)
+        $infoCmd = $this->getOrCreateCmd('info_skill', 'action', 'select', __('Info Skill', __FILE__), false);
+        if (is_object($infoCmd)) {
+            $skillsList = implode(';', array(
+                'weather|' . __('Weather', __FILE__),
+                'traffic|' . __('Traffic', __FILE__),
+                'flash_briefing|' . __('Flash Briefing', __FILE__),
+                'national_news|' . __('News', __FILE__),
+                'time|' . __('Time', __FILE__),
+                'date|' . __('Date', __FILE__),
+                'calendar_today|' . __('Calendar Today', __FILE__),
+                'calendar_tomorrow|' . __('Calendar Tomorrow', __FILE__),
+                'joke|' . __('Joke', __FILE__),
+                'fun_fact|' . __('Fun Fact', __FILE__),
+                'tell_story|' . __('Tell a Story', __FILE__),
+                'sing_song|' . __('Sing a Song', __FILE__),
+                'good_morning|' . __('Good Morning', __FILE__),
+                'goodnight|' . __('Good Night', __FILE__),
+                'im_home|' . __("I'm Home", __FILE__),
+                'clean_up|' . __('Clean Up', __FILE__),
+            ));
+            $infoCmd->setConfiguration('listValue', $skillsList);
+            $infoCmd->save();
+        }
+
+        // 16. Action: Run Alexa routine
+        $this->getOrCreateCmd('routine', 'action', 'message', __('Run Routine', __FILE__), false);
     }
 
     private function getOrCreateCmd($logicalId, $type, $subType, $name, $isVisible = true, $template = null) {
@@ -454,6 +488,36 @@ class alexa_devicesCmd extends cmd {
 
             case 'restart':
                 $action = 'restart';
+                break;
+
+            case 'sound':
+                $action = 'sound';
+                $params['sound'] = isset($options['message']) ? trim($options['message']) : '';
+                break;
+
+            case 'music':
+                $action = 'music';
+                $rawMsg = isset($options['message']) ? trim($options['message']) : '';
+                $provider = isset($options['title']) ? trim($options['title']) : '';
+                if (empty($provider) && strpos($rawMsg, '|') !== false) {
+                    list($provider, $rawMsg) = explode('|', $rawMsg, 2);
+                    $provider = trim($provider);
+                    $rawMsg = trim($rawMsg);
+                }
+                $params['search'] = $rawMsg;
+                if (!empty($provider)) {
+                    $params['provider'] = strtoupper($provider);
+                }
+                break;
+
+            case 'info_skill':
+                $action = 'info_skill';
+                $params['skill'] = isset($options['select']) ? $options['select'] : 'weather';
+                break;
+
+            case 'routine':
+                $action = 'routine';
+                $params['routine'] = isset($options['message']) ? trim($options['message']) : '';
                 break;
 
             default:

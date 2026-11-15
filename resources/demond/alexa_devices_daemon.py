@@ -1026,15 +1026,42 @@ class AlexaDaemon:
                     "flash_briefing": "Alexa.FlashBriefing.Play",
                     "time": "Alexa.Time.Play",
                     "date": "Alexa.Date.Play",
+                    "calendar_today": "Alexa.Calendar.PlayToday",
+                    "calendar_tomorrow": "Alexa.Calendar.PlayTomorrow",
+                    "calendar_next": "Alexa.Calendar.PlayNext",
                     "joke": "Alexa.Joke.Play",
                     "fun_fact": "Alexa.FunFact.Play",
+                    "tell_story": "Alexa.TellStory.Play",
                     "sing_song": "Alexa.SingASong.Play",
                     "good_morning": "Alexa.GoodMorning.Play",
                     "goodnight": "Alexa.GoodNight.Play",
+                    "im_home": "Alexa.ImHome.Play",
+                    "clean_up": "Alexa.CleanUp.Play",
                     "national_news": "Alexa.News.NationalNews",
                 }
                 alexa_skill = mapping.get(skill, skill)
                 await self.api.call_alexa_info_skill(device, alexa_skill)
+
+            elif action == "sound":
+                sound_name = params.get("sound", "")
+                await self.api.call_alexa_sound(device, sound_name)
+
+            elif action == "music":
+                search_phrase = params.get("search", "")
+                provider_id = params.get("provider", "")
+                if not provider_id:
+                    providers = await self.api.music_providers
+                    for preferred in ("AMAZON_MUSIC", "SPOTIFY", "TUNEIN", "APPLE_MUSIC", "DEEZER"):
+                        if preferred in providers:
+                            provider_id = preferred
+                            break
+                    if not provider_id and providers:
+                        provider_id = next(iter(providers.keys()))
+                await self.api.call_alexa_music(device, search_phrase, provider_id)
+
+            elif action == "routine":
+                routine_name = params.get("routine", "")
+                await self.api.call_routine(routine_name)
 
             elif action == "restart":
                 await self.api.restart_device(device)

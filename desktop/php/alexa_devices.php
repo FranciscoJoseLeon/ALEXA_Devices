@@ -277,6 +277,14 @@ if (!function_exists('alexa_get_device_icon_svg')) {
                                     </tr>
                                 </tbody>
                             </table>
+                            <hr style="margin:10px 0;"/>
+                            <p style="margin-bottom:6px;"><strong>{{Other commands reference:}}</strong></p>
+                            <ul style="margin-bottom:0; padding-left:20px;">
+                                <li><strong>{{Play Sound}}</strong>: <code>amzn_sfx_doorbell_chime_01</code>, <code>amzn_sfx_siren_01</code>, <code>bell_02</code>, <code>christmas_01</code></li>
+                                <li><strong>{{Play Music}}</strong>: {{Write a song/artist/station name, or specify the provider in Title or with}} <code>PROVEEDOR|búsqueda</code> (<code>SPOTIFY|Queen</code>, <code>TUNEIN|Los 40</code>, <code>AMAZON_MUSIC|Jazz</code>)</li>
+                                <li><strong>{{Info Skill}}</strong>: {{Select Weather, Traffic, News, Time, Joke, Good Morning, Good Night, etc.}}</li>
+                                <li><strong>{{Run Routine}}</strong>: {{Enter the exact name of your Alexa routine as configured in the Alexa app.}}</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
