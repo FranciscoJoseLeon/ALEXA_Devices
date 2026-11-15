@@ -88,3 +88,64 @@
     opacity: 0.55;
     filter: grayscale(80%);
 }
+
+/* Guía de capacidades en la pestaña del dispositivo */
+.alexa-capabilities-section {
+    padding: 4px 2px 18px 2px;
+}
+
+.alexa-capabilities-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: var(--txt-color, #2d3748);
+}
+
+.alexa-capabilities-subtitle {
+    font-size: 12.5px;
+    margin: 0 0 14px 0;
+    color: var(--txt-color, #4a5568);
+    opacity: 0.9;
+}
+
+.alexa-cap-card {
+    background: var(--defaultBkg-color, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-left-width: 4px;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.alexa-cap-voice { border-left-color: #00CAFA; }
+.alexa-cap-media { border-left-color: #8B5CF6; }
+.alexa-cap-routines { border-left-color: #10B981; }
+.alexa-cap-sensors { border-left-color: #F59E0B; }
+
+.alexa-cap-header {
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--txt-color, #1a202c);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.alexa-cap-voice .alexa-cap-header i { color: #00CAFA; }
+.alexa-cap-media .alexa-cap-header i { color: #8B5CF6; }
+.alexa-cap-routines .alexa-cap-header i { color: #10B981; }
+.alexa-cap-sensors .alexa-cap-header i { color: #F59E0B; }
+
+.alexa-cap-list {
+    margin: 0;
+    padding-left: 16px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--txt-color, #2d3748);
+}
+
+.alexa-cap-list li {
+    margin-bottom: 4px;
+}

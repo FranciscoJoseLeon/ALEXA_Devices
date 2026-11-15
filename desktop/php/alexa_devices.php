@@ -206,6 +206,68 @@ $eqLogics = eqLogic::byType($plugin->getId());
                         </div>
                     </fieldset>
                 </form>
+
+                <hr style="margin: 22px 0 18px 0;"/>
+                <div class="alexa-capabilities-section">
+                    <h4 class="alexa-capabilities-title">
+                        <i class="fas fa-compass" style="color:#00CAFA;"></i> {{What can you do with this Alexa device?}}
+                    </h4>
+                    <p class="alexa-capabilities-subtitle">
+                        {{Quick guide to all available commands and automations. You can test or trigger any of them from the Commands tab or inside Jeedom Scenarios.}}
+                    </p>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-md-6">
+                            <div class="alexa-cap-card alexa-cap-voice">
+                                <div class="alexa-cap-header"><i class="fas fa-comment-dots"></i> {{Voice &amp; Announcements}}</div>
+                                <ul class="alexa-cap-list">
+                                    <li><strong>{{Speak (TTS)}}</strong> — {{Reads any text aloud. Supports SSML tags for pauses, speed, or pitch.}}</li>
+                                    <li><strong>{{Whisper}}</strong> — {{Speaks softly in a whisper (can stay active during night silence).}}</li>
+                                    <li><strong>{{Announcement}}</strong> — {{Plays a chime and broadcasts an announcement.}}</li>
+                                    <li><strong>{{Voice Command}}</strong> — {{Runs any phrase as if you said "Alexa, ..." (e.g. "turn off lights").}}</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-12 col-md-6">
+                            <div class="alexa-cap-card alexa-cap-media">
+                                <div class="alexa-cap-header"><i class="fas fa-music"></i> {{Audio, Music &amp; Volume}}</div>
+                                <ul class="alexa-cap-list">
+                                    <li><strong>{{Play / Pause / Next / Previous}}</strong> — {{Controls media playback and updates the current track/state.}}</li>
+                                    <li><strong>{{Set Volume}}</strong> — {{Sets speaker volume (0–100). Respects the night volume cap if enabled.}}</li>
+                                    <li><strong>{{Play Sound}}</strong> — {{Plays built-in Alexa sound effects (chimes, bell, doorbell, etc.).}}</li>
+                                    <li><strong>{{Play Music / Radio}}</strong> — {{Starts music or TuneIn radio stations directly on the device.}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-md-6">
+                            <div class="alexa-cap-card alexa-cap-routines">
+                                <div class="alexa-cap-header"><i class="fas fa-magic"></i> {{Routines, Alarms &amp; Focus}}</div>
+                                <ul class="alexa-cap-list">
+                                    <li><strong>{{Run Routine (List / Text)}}</strong> — {{Triggers any of your Amazon Alexa routines from a dropdown or scenario.}}</li>
+                                    <li><strong>{{Do Not Disturb (On / Off)}}</strong> — {{Blocks calls, drop-ins, and notifications when you need quiet.}}</li>
+                                    <li><strong>{{Create Alarm / Timer}}</strong> — {{Schedules alarms or countdown timers automatically from Jeedom.}}</li>
+                                    <li><strong>{{Night Silence}}</strong> — {{Automatically mutes spoken alerts during configured sleeping hours.}}</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-12 col-md-6">
+                            <div class="alexa-cap-card alexa-cap-sensors">
+                                <div class="alexa-cap-header"><i class="fas fa-microchip"></i> {{Device State &amp; Sensors}}</div>
+                                <ul class="alexa-cap-list">
+                                    <li><strong>{{Online Status &amp; Volume}}</strong> — {{Real-time availability and current volume level.}}</li>
+                                    <li><strong>{{Temperature &amp; Bluetooth}}</strong> — {{Built-in room temperature (on supported Echo models) and Bluetooth state.}}</li>
+                                    <li><strong>{{Last Command &amp; Next Alarm}}</strong> — {{Displays the latest voice interaction and upcoming alarms/timers.}}</li>
+                                    <li><strong>{{Refresh}}</strong> — {{Forces an immediate state update from Amazon servers.}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div role="tabpanel" class="tab-pane" id="commandtab">
