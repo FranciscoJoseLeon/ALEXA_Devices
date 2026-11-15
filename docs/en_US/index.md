@@ -27,6 +27,13 @@ Modern integration plugin for Amazon Echo and Alexa-enabled devices in Jeedom v4
 
 ---
 
+## Dashboard Widget & Command Options
+
+- **Universal Command Selector**: directly from the Dashboard tile, select any device command (`speak`, `whisper`, `announcement`, `text_command`, `sound`, `info_skill`, `music`, `routine`, `set_volume`, `dnd_on/off`, `play/pause/stop/next/previous`).
+- **Automatic Dropdowns**: selecting `sound`, `info_skill`, or `routine` automatically switches the input to a dropdown of available options.
+- **Music (`music`)**: enter a song, artist, or radio station (or `SPOTIFY|Queen`, `TUNEIN|Los 40`, `AMAZON_MUSIC|Jazz`).
+- **Quick Access**: click the device title or the **`?`** button on the widget to open the full device page with the interactive command tester, SSML/smart-home examples, and routines.
+
 ## Disclaimer & Limitation of Liability
 
 - **Non-Affiliation**: This software is an independent community project and is **not** endorsed, certified, or affiliated with Amazon.com, Inc. or Amazon Technologies, Inc. All trademarks belong to their respective owners.

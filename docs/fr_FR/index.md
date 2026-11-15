@@ -27,6 +27,13 @@ Plugin d'intégration moderne pour les appareils Amazon Echo et compatibles Alex
 
 ---
 
+## Widget Dashboard et Options des Commandes
+
+- **Sélecteur universel de commandes** : depuis la tuile du Dashboard, choisissez n'importe quelle commande de l'appareil (`speak`, `whisper`, `announcement`, `text_command`, `sound`, `info_skill`, `music`, `routine`, `set_volume`, `dnd_on/off`, `play/pause/stop/next/previous`).
+- **Listes déroulantes automatiques** : en sélectionnant `sound`, `info_skill` ou `routine`, le champ se transforme en liste des options disponibles.
+- **Musique (`music`)** : saisissez un titre, artiste ou station (ou `SPOTIFY|Queen`, `TUNEIN|Los 40`, `AMAZON_MUSIC|Jazz`).
+- **Accès rapide** : cliquez sur le nom de l'appareil ou sur le bouton **`?`** du widget pour ouvrir la fiche complète avec le testeur de commandes, exemples SSML/domotique et routines.
+
 ## Avertissement et limitation de responsabilité
 
 - **Non-affiliation** : Ce plugin est un projet communautaire indépendant et n'est **en aucun cas** affilié, approuvé ou certifié par Amazon.com, Inc. ou Amazon Technologies, Inc. Toutes les marques appartiennent à leurs propriétaires respectifs.

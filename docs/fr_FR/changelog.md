@@ -1,16 +1,10 @@
 # Changelog Alexa Devices
 
-## [0.9.0] - 14/11/2026
-### Ajouté
-- Version initiale stable pour Jeedom v4 / v4.4+.
-- Prise en charge du flux push HTTP/2 en temps réel avec Amazon AVS.
-- Découverte automatique des appareils Echo et compatibles Alexa.
-- Synthèse vocale (`speak`) et annonces (`announcement`) avec carillon d'attention.
-- Commandes vocales émulées par texte (`text_command`).
-- Curseur de volume interactif (0-100) avec synchronisation bidirectionnelle.
-- Contrôles multimédia (Lecture, Pause, Suivant, Précédent) et affichage de l'état.
-- Contrôle du mode Ne pas déranger (DND).
-- Historique des commandes vocales entendues (`last_command`).
-- Assistant de connexion avec authentification à deux facteurs (2FA OTP).
-- Widgets dédiés pour le Dashboard et la version mobile.
-- Support multilingue complet (français, anglais, espagnol).
+## [0.9.0] - 15/11/2026
+### Ajouté et Amélioré
+- Version bêta v0.9.0 pour Jeedom v4 / v4.4+ avec flux push HTTP/2 en temps réel (`aioamazondevices >= 17.2.12`).
+- Découverte automatique des appareils Echo, TV avec Alexa et groupes d'enceintes (`WHA` / Speaker Group).
+- **Widget Dashboard complet** : contrôles multimédias (`Play`, `Pause`, `Stop`, `Next`, `Previous`), curseur de volume bidirectionnel, sélecteur de **toutes** les commandes de l'appareil, listes déroulantes de sons, *info skills* et routines synchronisées, ainsi qu'un lien direct (`?` et titre) vers la configuration de l'équipement.
+- **TTS sur groupes d'enceintes (`WHA`)** : `speak` diffuse le message en parallèle sur chaque membre du groupe ; prise en charge native du chuchotement (`whisper`) et des balises SSML.
+- **Musique et Sons** : prise en charge de `FOURNISSEUR|recherche` (Spotify, TuneIn, Amazon Music, Apple Music, Deezer) et des commandes vocales par texte (`text_command`).
+- **Testeur interactif de commandes et Routines** : exemples prêts à l'emploi en 3 langues, synchronisation des routines Alexa et guide d'intégration avec les scénarios Jeedom et la maison connectée.
