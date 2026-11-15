@@ -15,6 +15,8 @@ $current_user = config::byKey('amazon_username', 'alexa_devices', '');
 $current_domain = config::byKey('amazon_domain', 'alexa_devices', 'es');
 $auth_token = sha1(config::byKey('amazon_token', 'alexa_devices', '') . microtime() . rand());
 cache::set('alexa_devices_auth_token', $auth_token, 1800);
+$daemon_info = alexa_devices::deamon_info();
+$is_daemon_running = (isset($daemon_info['state']) && $daemon_info['state'] == 'ok');
 ?>
 
 <div class="row">
@@ -65,7 +67,14 @@ cache::set('alexa_devices_auth_token', $auth_token, 1800);
                         </span>
                     </div>
 
-                    <button type="button" class="btn btn-success btn-lg" id="btn_open_amazon_proxy" style="font-weight: bold; padding: 12px 28px;">
+                    <?php if (!$is_daemon_running): ?>
+                    <div class="alert alert-danger" style="text-align: left; margin: 15px 0;">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>{{The Alexa daemon is not running!}}</strong><br>
+                        {{Please check dependencies and start the daemon in the plugin configuration page before proceeding with authentication.}}
+                    </div>
+                    <?php endif; ?>
+
+                    <button type="button" class="btn btn-success btn-lg" id="btn_open_amazon_proxy" <?php if (!$is_daemon_running) echo 'disabled title="{{Please start the daemon first}}"'; ?> style="font-weight: bold; padding: 12px 28px;">
                         <i class="fab fa-amazon"></i> {{Open Official Amazon Login Window}}
                     </button>
 

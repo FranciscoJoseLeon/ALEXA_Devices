@@ -79,8 +79,26 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 $response = curl_exec($ch);
 if (curl_errno($ch)) {
     http_response_code(502);
-    echo "Erreur de communication avec le démon Alexa: " . curl_error($ch);
+    $err = curl_error($ch);
     curl_close($ch);
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Démon Alexa non démarré</title>';
+    echo '<style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f4f6f9;color:#333;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:20px;box-sizing:border-box;}';
+    echo '.card{background:#fff;border-radius:10px;padding:30px;max-width:540px;box-shadow:0 6px 20px rgba(0,0,0,0.12);text-align:center;}';
+    echo 'h2{color:#d9534f;margin-top:0;}p{line-height:1.6;color:#555;}ol{text-align:left;color:#444;line-height:1.9;background:#fdf2f2;border-left:4px solid #d9534f;padding:15px 15px 15px 35px;border-radius:4px;}';
+    echo '.btn{display:inline-block;margin-top:15px;padding:10px 20px;background:#337ab7;color:#fff;text-decoration:none;border-radius:5px;font-weight:bold;cursor:pointer;}';
+    echo '</style></head><body>';
+    echo '<div class="card">';
+    echo '<h2>⚠️ Demonio de Alexa no iniciado</h2>';
+    echo '<p>Para autenticarte con Amazon mediante el proxy oficial, el servicio local del plugin debe estar en funcionamiento en Jeedom.</p>';
+    echo '<ol>';
+    echo '<li>En Jeedom, ve a <b>Plugins &rarr; Gestión de plugins &rarr; ALEXA Devices</b>.</li>';
+    echo '<li>Comprueba que las <b>Dependencias</b> estén en estado <b>OK</b> (si no, pulsa en <i>Relanzar</i>).</li>';
+    echo '<li>En el bloque <b>Demonio</b>, pulsa el botón verde <b>(Re)Démarrer / Iniciar</b>.</li>';
+    echo '<li>Una vez que el Demonio esté en verde (OK), vuelve a abrir esta ventana.</li>';
+    echo '</ol>';
+    echo '<p style="font-size:12px;color:#999;margin-top:20px;">Detalle de conexión: ' . htmlspecialchars($err) . '</p>';
+    echo '<button class="btn" onclick="window.location.reload();">Reintentar</button>';
+    echo '</div></body></html>';
     exit;
 }
 

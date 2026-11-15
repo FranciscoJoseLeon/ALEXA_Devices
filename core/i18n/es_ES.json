@@ -72,7 +72,10 @@
         "Authentication successful!": "¡Autenticación completada con éxito!",
         "Authentication validated successfully!": "¡Autenticación validada con éxito!",
         "Connected successfully! Discovering devices...": "¡Conectado con éxito! Descubriendo dispositivos...",
-        "Communication error: ": "Error de comunicación: "
+        "Communication error: ": "Error de comunicación: ",
+        "The Alexa daemon is not running!": "¡El demonio de Alexa no está en ejecución!",
+        "Please check dependencies and start the daemon in the plugin configuration page before proceeding with authentication.": "Por favor, comprueba las dependencias e inicia el demonio en la página de configuración del plugin antes de identificarte.",
+        "Please start the daemon first": "Por favor, inicia el demonio primero"
     },
     "plugins/alexa_devices/desktop/php/alexa_devices.php": {
         "401 - Unauthorized access": "401 - Acceso no autorizado",
