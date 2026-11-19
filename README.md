@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/badge/version-0.9.0-blue.svg)](https://github.com/FranciscoJoseLeon/plugin-alexa_devices)
 [![Languages](https://img.shields.io/badge/lang-fr__FR%20%7C%20en__US%20%7C%20es__ES-informational.svg)](#readme)
 [![License: GPL](https://img.shields.io/badge/License-GPL-blue.svg)](LICENSE)
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/fjleon)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support_My_Work-FF5E5B?style=flat&logo=ko-fi&logoColor=white)](https://ko-fi.com/fjleon)
 
 🌐 **Languages / Langues / Idiomas :** [🇫🇷 Français](#-français) • [🇬🇧 English](#-english) • [🇪🇸 Español](#-español)
 
