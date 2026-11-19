@@ -52,6 +52,26 @@ logging.basicConfig(
 LOGGER = logging.getLogger("alexa_devices_daemon")
 
 
+class _AmazonUpstreamNoiseFilter(logging.Filter):
+    """Downgrade known Amazon 403 vocal-history push tracebacks so logs stay clean."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        msg = record.getMessage()
+        if record.levelno >= logging.ERROR and "PUSH_EQUALIZER_STATE_CHANGE" in msg:
+            exc = record.exc_info[1] if record.exc_info else None
+            if exc and "Forbidden" in str(exc):
+                record.levelno = logging.DEBUG
+                record.levelname = "DEBUG"
+                record.exc_info = None
+                record.exc_text = None
+                record.msg = "Amazon vocal-history endpoint returned 403 Forbidden (upstream restriction); ignoring."
+                record.args = ()
+        return True
+
+
+logging.getLogger("aioamazondevices").addFilter(_AmazonUpstreamNoiseFilter())
+
+
 class AlexaDaemon:
     def __init__(
         self,
