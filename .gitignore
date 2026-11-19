@@ -25,3 +25,4 @@ Thumbs.db
 # Internal developer sync state
 tools/.upstream_state.json
 tools/last_report.md
+PRESENTATION_COMMUNITY.md
