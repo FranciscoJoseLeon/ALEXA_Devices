@@ -575,6 +575,32 @@ class alexa_devices extends eqLogic {
         }
         $replace['#cmd_options#'] = $cmdOptionsHtml;
 
+        $sensorsHtml = '';
+        $allInfos = $this->getCmd('info');
+        if (is_array($allInfos)) {
+            $sensorPills = '';
+            foreach ($allInfos as $infoCmd) {
+                $lid = $infoCmd->getLogicalId();
+                if (strpos($lid, 'sensor_') !== 0) {
+                    continue;
+                }
+                $val = $infoCmd->execCmd();
+                if ($val === '' || $val === null) {
+                    continue;
+                }
+                $unit = trim((string)$infoCmd->getUnite());
+                $displayVal = ($infoCmd->getSubType() === 'binary')
+                    ? ($val ? __('Detected', __FILE__) : __('Clear', __FILE__))
+                    : htmlspecialchars((string)$val) . ($unit !== '' ? ' ' . htmlspecialchars($unit) : '');
+                $sensorPills .= '<span class="label label-info" style="font-size:10px;padding:2px 5px;" title="' . htmlspecialchars($infoCmd->getName()) . '">'
+                    . htmlspecialchars($infoCmd->getName()) . ': ' . $displayVal . '</span>';
+            }
+            if ($sensorPills !== '') {
+                $sensorsHtml = '<div class="alexa-sensors-row" style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0;">' . $sensorPills . '</div>';
+            }
+        }
+        $replace['#sensors_display#'] = $sensorsHtml;
+
         $template = translate::exec(
             getTemplate('core', $version, 'alexa_devices', 'alexa_devices'),
             'plugins/alexa_devices/core/template/' . $version . '/alexa_devices.html'
@@ -700,6 +726,73 @@ class alexa_devices extends eqLogic {
             $cmd->save();
         }
         return $cmd;
+    }
+
+    public function updateSensors($sensors) {
+        if (!is_array($sensors)) {
+            return;
+        }
+        $sensorMeta = array(
+            'temperature' => array('name' => __('Temperature', __FILE__), 'unit' => '°C', 'generic' => 'TEMPERATURE'),
+            'humidity' => array('name' => __('Humidity', __FILE__), 'unit' => '%', 'generic' => 'HUMIDITY'),
+            'pm25' => array('name' => __('PM2.5', __FILE__), 'unit' => 'µg/m³', 'generic' => 'DONT'),
+            'voc' => array('name' => __('VOC', __FILE__), 'unit' => 'ppb', 'generic' => 'DONT'),
+            'co' => array('name' => __('Carbon Monoxide (CO)', __FILE__), 'unit' => 'ppm', 'generic' => 'CO'),
+            'air_quality' => array('name' => __('Air Quality', __FILE__), 'unit' => '', 'generic' => 'DONT'),
+            'indoor_air_quality' => array('name' => __('Air Quality', __FILE__), 'unit' => '', 'generic' => 'DONT'),
+            'illuminance' => array('name' => __('Illuminance', __FILE__), 'unit' => 'lx', 'generic' => 'LUMINOSITY'),
+            'occupancy' => array('name' => __('Presence', __FILE__), 'unit' => '', 'generic' => 'PRESENCE'),
+            'human_presence' => array('name' => __('Presence', __FILE__), 'unit' => '', 'generic' => 'PRESENCE'),
+            'motion' => array('name' => __('Motion', __FILE__), 'unit' => '', 'generic' => 'PRESENCE'),
+        );
+
+        foreach ($sensors as $sensorKey => $info) {
+            if (!is_array($info) || !empty($info['error']) || !array_key_exists('value', $info) || $info['value'] === null || $info['value'] === '') {
+                continue;
+            }
+            $normKey = preg_replace('/[^a-z0-9_]+/', '_', strtolower((string)$sensorKey));
+            $normKey = trim($normKey, '_');
+            if ($normKey === '') {
+                continue;
+            }
+            $logicalId = 'sensor_' . $normKey;
+            $rawVal = $info['value'];
+            $scale = isset($info['scale']) && $info['scale'] !== null ? trim((string)$info['scale']) : '';
+            $meta = isset($sensorMeta[$normKey]) ? $sensorMeta[$normKey] : null;
+            $label = $meta ? $meta['name'] : (!empty($info['name']) ? (string)$info['name'] : ucwords(str_replace('_', ' ', $normKey)));
+
+            if (is_bool($rawVal)) {
+                $subType = 'binary';
+                $val = $rawVal ? 1 : 0;
+            } elseif (is_string($rawVal) && in_array(strtoupper(trim($rawVal)), array('TRUE', 'FALSE', 'DETECTED', 'NOT_DETECTED'), true)) {
+                $subType = 'binary';
+                $upper = strtoupper(trim($rawVal));
+                $val = ($upper === 'TRUE' || $upper === 'DETECTED') ? 1 : 0;
+            } elseif (is_numeric($rawVal)) {
+                $subType = 'numeric';
+                $val = $rawVal + 0;
+            } else {
+                $subType = 'string';
+                $val = (string)$rawVal;
+            }
+
+            $cmd = $this->getCmd(null, $logicalId);
+            if (!is_object($cmd)) {
+                $cmd = $this->getOrCreateCmd($logicalId, 'info', $subType, $label, true);
+                $unit = $scale !== '' ? $scale : ($meta ? $meta['unit'] : '');
+                if ($unit === 'CELSIUS' || $unit === 'C') $unit = '°C';
+                if ($unit === 'FAHRENHEIT' || $unit === 'F') $unit = '°F';
+                if ($unit === 'PERCENT') $unit = '%';
+                if ($unit !== '') {
+                    $cmd->setUnite($unit);
+                }
+                if ($meta && $meta['generic'] !== 'DONT') {
+                    $cmd->setGeneric_type($meta['generic']);
+                }
+                $cmd->save();
+            }
+            $this->checkAndUpdateCmd($logicalId, $val);
+        }
     }
 }
 

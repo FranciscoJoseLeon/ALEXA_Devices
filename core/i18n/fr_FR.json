@@ -372,7 +372,18 @@
         "Sci-Fi Alarm": "Alarme Sci-Fi",
         "Dog Bark": "Aboiement",
         "Cat Meow": "Miaulement",
-        "Applause": "Applaudissements"
+        "Applause": "Applaudissements",
+        "Detected": "Détecté",
+        "Clear": "R.A.S.",
+        "Temperature": "Température",
+        "Humidity": "Humidité",
+        "PM2.5": "PM2.5",
+        "VOC": "COV (VOC)",
+        "Carbon Monoxide (CO)": "Monoxyde de carbone (CO)",
+        "Air Quality": "Qualité de l'air",
+        "Illuminance": "Luminosité",
+        "Presence": "Présence",
+        "Motion": "Mouvement"
     },
     "plugins/alexa_devices/core/ajax/alexa_devices.ajax.php": {
         "401 - Unauthorized access": "401 - Accès non autorisé",

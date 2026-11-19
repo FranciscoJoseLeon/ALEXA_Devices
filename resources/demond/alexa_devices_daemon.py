@@ -197,15 +197,23 @@ class AlexaDaemon:
 
     async def _on_sensor_event(self):
         LOGGER.debug("Evento de sensor recibido.")
-        if not self.api:
+        if not self.api or not getattr(self.api, "sensors", None):
             return
         sensor_data = {}
         for serial, sensors in self.api.sensors.items():
+            if not isinstance(sensors, dict):
+                continue
             sensor_data[serial] = {
-                k: {"name": s.name, "value": s.value, "scale": s.scale}
+                k: {
+                    "name": getattr(s, "name", k),
+                    "value": getattr(s, "value", None),
+                    "scale": getattr(s, "scale", None),
+                    "error": getattr(s, "error", False),
+                }
                 for k, s in sensors.items()
             }
-        await self._send_to_jeedom("sensor_state", sensor_data)
+        if sensor_data:
+            await self._send_to_jeedom("sensor_state", sensor_data)
 
     async def _on_history_event(self, vocal_records):
         LOGGER.debug("Evento de historial de voz recibido: %s", vocal_records)
@@ -267,6 +275,8 @@ class AlexaDaemon:
             LOGGER.info("Sincronizados %d dispositivos Alexa.", len(self.devices))
             # Notificar a Jeedom de la lista de dispositivos
             await self._send_to_jeedom("devices_list", devs_summary)
+            # Enviar también los sensores iniciales (temperatura, calidad del aire, presencia, etc.)
+            await self._on_sensor_event()
             return devs_summary
         except CannotRetrieveData as err:
             LOGGER.error("Error al obtener datos de Amazon (posible cambio de API): %s", err)

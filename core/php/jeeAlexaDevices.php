@@ -90,6 +90,17 @@ switch ($eventType) {
         }
         break;
 
+    case 'sensor_state':
+        if (is_array($payload)) {
+            foreach ($payload as $serial => $sensors) {
+                $eqLogic = alexa_devices::byLogicalId($serial, 'alexa_devices');
+                if (is_object($eqLogic) && is_array($sensors)) {
+                    $eqLogic->updateSensors($sensors);
+                }
+            }
+        }
+        break;
+
     case 'auth_required':
         message::add('alexa_devices', __('Amazon session has expired. Please log in again in the plugin configuration.', __FILE__));
         break;
