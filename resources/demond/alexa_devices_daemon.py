@@ -217,13 +217,28 @@ class AlexaDaemon:
 
     async def _on_history_event(self, vocal_records):
         LOGGER.debug("Evento de historial de voz recibido: %s", vocal_records)
+        if not vocal_records:
+            return
         formatted = {}
-        for serial, record in vocal_records.items():
-            formatted[serial] = {
-                "description": getattr(record, "description", None),
-                "time": getattr(record, "time", None),
-            }
-        await self._send_to_jeedom("history_state", formatted)
+        items = vocal_records.items() if isinstance(vocal_records, dict) else [
+            (getattr(r, "device_serial", None) or getattr(r, "serial_number", None) or getattr(r, "serial", None), r)
+            for r in (vocal_records if isinstance(vocal_records, (list, tuple)) else [vocal_records])
+        ]
+        for serial, record in items:
+            if not serial or record is None:
+                continue
+            desc = (
+                getattr(record, "description", None)
+                or getattr(record, "summary", None)
+                or getattr(record, "utterance_text", None)
+                or getattr(record, "text", None)
+                or (record.get("description") or record.get("summary") if isinstance(record, dict) else None)
+            )
+            ts = getattr(record, "time", None) or (record.get("time") if isinstance(record, dict) else None)
+            if desc:
+                formatted[serial] = {"description": str(desc), "time": ts}
+        if formatted:
+            await self._send_to_jeedom("history_state", formatted)
 
     async def _on_todo_event(self, list_event):
         LOGGER.debug("Evento de lista de tareas: %s", list_event)
