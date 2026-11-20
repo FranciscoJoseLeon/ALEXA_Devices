@@ -1268,6 +1268,8 @@ async def main():
     numeric_level = getattr(logging, args.loglevel.upper(), logging.INFO)
     logging.getLogger().setLevel(numeric_level)
     LOGGER.setLevel(numeric_level)
+    logging.getLogger("hpack").setLevel(logging.WARNING)
+    logging.getLogger("charset_normalizer").setLevel(logging.WARNING)
     if numeric_level > logging.DEBUG:
         logging.getLogger("httpx").setLevel(logging.WARNING)
         logging.getLogger("httpcore").setLevel(logging.WARNING)
