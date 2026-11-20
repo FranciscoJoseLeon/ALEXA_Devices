@@ -809,6 +809,10 @@ class alexa_devices extends eqLogic {
             return $replace;
         }
         $version = jeedom::versionAlias($_version);
+        $replace['#height#'] = 'auto';
+        if (isset($replace['#style#'])) {
+            $replace['#style#'] = preg_replace('/height\s*:\s*[^;]+;?/', '', $replace['#style#']);
+        }
         $replace['#eqLogic_href#'] = $this->getLinkToConfiguration();
 
         $status = $this->getCmd(null, 'status');
