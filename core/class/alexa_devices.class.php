@@ -1016,25 +1016,21 @@ class alexa_devices extends eqLogic {
             if (!empty($cmdOptionsHtml)) {
                 $volVal = isset($replace['#volume#']) ? $replace['#volume#'] : 50;
                 $replace['#quick_actions_section#'] = '
-                <div class="alexa-quick-action-row">
-                    <div style="display: flex; gap: 4px; align-items: center;">
-                        <select class="form-control input-sm alexa-widget-cmd-select" style="flex: 1;" title="' . __('Select command', __FILE__) . '">
-                            ' . $cmdOptionsHtml . '
-                        </select>
-                        <a href="' . $replace['#eqLogic_href#'] . '" class="btn btn-xs btn-default alexa-btn-help-link reportModeHidden" title="' . __('Command help & configuration', __FILE__) . '">
-                            <i class="fas fa-question-circle"></i>
-                        </a>
-                    </div>
-                    <div class="input-group input-group-sm" style="margin-top: 4px;">
+                <div class="alexa-quick-action-row alexa-unified-action-bar">
+                    <select class="form-control input-sm alexa-widget-cmd-select" title="' . __('Select command', __FILE__) . '">
+                        ' . $cmdOptionsHtml . '
+                    </select>
+                    <div class="alexa-input-wrapper">
                         <input type="text" class="form-control alexa-input-text" placeholder="' . __('Text to speak (SSML supported)...', __FILE__) . '" />
                         <select class="form-control alexa-input-select" style="display: none;"></select>
                         <input type="number" class="form-control alexa-input-slider" min="0" max="100" value="' . $volVal . '" style="display: none;" />
-                        <div class="input-group-btn">
-                            <button type="button" class="btn btn-info alexa-btn-run-selected" title="' . __('Execute command', __FILE__) . '">
-                                <i class="fas fa-play"></i>
-                            </button>
-                        </div>
                     </div>
+                    <button type="button" class="btn btn-info alexa-btn-run-selected" title="' . __('Execute command', __FILE__) . '">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <a href="' . $replace['#eqLogic_href#'] . '" class="btn btn-default alexa-btn-help-link reportModeHidden" title="' . __('Command help & configuration', __FILE__) . '">
+                        <i class="fas fa-question-circle"></i>
+                    </a>
                 </div>';
             } else {
                 $replace['#quick_actions_section#'] = '';
