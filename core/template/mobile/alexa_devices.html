@@ -5,41 +5,34 @@
     </center>
 
     <div class="alexa-card-content">
-        <div class="alexa-header-row">
-            <div class="alexa-status-badge">#status_display#</div>
-            <div class="alexa-dnd-toggle">#dnd_display#</div>
-        </div>
+        <!-- MONITOR DE CALIDAD DEL AIRE (DEDICADO) -->
+        #aqm_display#
 
-        <div class="alexa-media-section">
-            <div class="alexa-media-info">
-                <i class="fas fa-music"></i> <span class="alexa-media-state">#media_state#</span>
-            </div>
-            <div class="alexa-media-controls">
-                <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-alexa" data-cmd_id="#previous_id#">
-                    <i class="fas fa-step-backward"></i>
-                </button>
-                <button type="button" class="btn btn-primary btn-circle cmd-btn-alexa" data-cmd_id="#play_id#">
-                    <i class="fas fa-play"></i>
-                </button>
-                <button type="button" class="btn btn-default btn-circle cmd-btn-alexa" data-cmd_id="#pause_id#">
-                    <i class="fas fa-pause"></i>
-                </button>
-                <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-alexa" data-cmd_id="#next_id#">
-                    <i class="fas fa-step-forward"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="alexa-volume-row">
-            <i class="fas fa-volume-down"></i>
-            <input type="range" class="alexa-vol-slider" min="0" max="100" value="#volume#" data-cmd_id="#set_volume_id#" />
-            <i class="fas fa-volume-up"></i>
-            <span class="alexa-vol-val">#volume#%</span>
-        </div>
-
-        <div class="alexa-last-cmd-bubble">
-            <i class="fas fa-comment-dots" style="color: #00CAFA;"></i>
-            <span>#last_command#</span>
-        </div>
+        <!-- CONTROLES ESTÁNDAR ECHO (CONDICIONALES) -->
+        #header_row#
+        #sensors_display#
+        #media_section#
+        #volume_section#
+        #last_command_section#
     </div>
+
+    <script>
+        (function() {
+            var $widget = $('.alexa-widget[data-eqLogic_id=#id#]');
+            $widget.find('.cmd-btn-alexa').off('click').on('click', function() {
+                var cmdId = $(this).attr('data-cmd_id');
+                if (cmdId) {
+                    jeedom.cmd.execute({id: cmdId});
+                }
+            });
+            $widget.find('.alexa-vol-slider').off('change').on('change', function() {
+                var cmdId = $(this).attr('data-cmd_id');
+                var val = $(this).val();
+                $(this).siblings('.alexa-vol-val').text(val + '%');
+                if (cmdId) {
+                    jeedom.cmd.execute({id: cmdId, value: {slider: val}});
+                }
+            });
+        })();
+    </script>
 </div>

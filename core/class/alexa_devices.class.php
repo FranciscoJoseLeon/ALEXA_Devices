@@ -359,6 +359,9 @@ class alexa_devices extends eqLogic {
         $eqLogic->setConfiguration('hardware_version', $hwVersion);
         $eqLogic->setConfiguration('manufacturer', isset($device['manufacturer']) ? $device['manufacturer'] : '');
         $eqLogic->setConfiguration('primary_display_category', isset($device['primary_display_category']) ? $device['primary_display_category'] : '');
+        $eqLogic->setConfiguration('media_player_supported', !empty($device['media_player_supported']) ? 1 : 0);
+        $eqLogic->setConfiguration('notifications_supported', !empty($device['notifications_supported']) ? 1 : 0);
+        $eqLogic->setConfiguration('voice_control_supported', !empty($device['voice_control_supported']) ? 1 : 0);
         $eqLogic->save();
 
         // Crear/actualizar comandos por defecto para este dispositivo Echo
@@ -376,6 +379,15 @@ class alexa_devices extends eqLogic {
      * Resolves a distinct SVG image path and human-readable model/generation label for an eqLogic.
      */
     public static function resolveDeviceVisual($eqLogic) {
+        $base = 'plugins/alexa_devices/desktop/img/devices/';
+        if (method_exists($eqLogic, 'isAirQualityMonitor') && $eqLogic->isAirQualityMonitor()) {
+            $m = trim((string)$eqLogic->getConfiguration('model', ''));
+            return array(
+                'image' => $base . 'air_quality_monitor.svg',
+                'label' => !empty($m) ? $m : __('Smart Air Quality Monitor', __FILE__)
+            );
+        }
+
         $family = strtoupper((string)$eqLogic->getConfiguration('device_family', 'ECHO'));
         $type = strtoupper((string)$eqLogic->getConfiguration('device_type', ''));
         $model = trim((string)$eqLogic->getConfiguration('model', ''));
@@ -458,6 +470,339 @@ class alexa_devices extends eqLogic {
         );
     }
 
+    public function isAirQualityMonitor() {
+        $cat = strtoupper((string)$this->getConfiguration('primary_display_category', ''));
+        if (strpos($cat, 'AIR_QUALITY') !== false) {
+            return true;
+        }
+        $fam = strtoupper((string)$this->getConfiguration('device_family', ''));
+        if (strpos($fam, 'AIR_QUALITY') !== false) {
+            return true;
+        }
+        $type = strtoupper((string)$this->getConfiguration('device_type', ''));
+        if (in_array($type, array('A8KSS7MTPDMS', 'A3RMGO6LYLH7AQM'), true)) {
+            return true;
+        }
+        $name = strtolower($this->getName());
+        if (strpos($name, 'qualité de l\'air') !== false || strpos($name, 'qualite de l\'air') !== false || strpos($name, 'calidad del aire') !== false || strpos($name, 'air quality') !== false) {
+            return true;
+        }
+        if ($this->getCmd(null, 'sensor_air_quality') || $this->getCmd(null, 'sensor_indoor_air_quality') || $this->getCmd(null, 'sensor_pm25') || $this->getCmd(null, 'sensor_voc')) {
+            return true;
+        }
+        return false;
+    }
+
+    public function supportsMediaPlayer() {
+        if ($this->isAirQualityMonitor()) {
+            return false;
+        }
+        $cfg = $this->getConfiguration('media_player_supported', null);
+        if ($cfg !== null && $cfg !== '') {
+            return ($cfg == 1);
+        }
+        return is_object($this->getCmd(null, 'play'));
+    }
+
+    public function supportsVolume() {
+        if ($this->isAirQualityMonitor()) {
+            return false;
+        }
+        return is_object($this->getCmd(null, 'set_volume'));
+    }
+
+    public function supportsVoiceControl() {
+        if ($this->isAirQualityMonitor()) {
+            return false;
+        }
+        $cfg = $this->getConfiguration('voice_control_supported', null);
+        if ($cfg !== null && $cfg !== '') {
+            return ($cfg == 1);
+        }
+        return is_object($this->getCmd(null, 'last_command'));
+    }
+
+    public function supportsActions() {
+        if ($this->isAirQualityMonitor()) {
+            return false;
+        }
+        return true;
+    }
+
+    public function buildAqmWidgetHtml($isOnline) {
+        $iaqCmd = $this->getCmd(null, 'sensor_air_quality');
+        if (!is_object($iaqCmd)) {
+            $iaqCmd = $this->getCmd(null, 'sensor_indoor_air_quality');
+        }
+        $iaqVal = is_object($iaqCmd) ? $iaqCmd->execCmd() : null;
+        $hasIaq = ($iaqVal !== '' && $iaqVal !== null && is_numeric($iaqVal));
+        $score = $hasIaq ? intval($iaqVal) : null;
+
+        if ($score !== null) {
+            if ($score >= 80) {
+                $scoreColor = '#00E676';
+                $scoreRgb = '0, 230, 118';
+                $scoreText = __('Very Good', __FILE__);
+                $scoreSub = __('Clean and healthy air', __FILE__);
+            } elseif ($score >= 65) {
+                $scoreColor = '#00B0FF';
+                $scoreRgb = '0, 176, 255';
+                $scoreText = __('Good', __FILE__);
+                $scoreSub = __('Acceptable air quality', __FILE__);
+            } elseif ($score >= 50) {
+                $scoreColor = '#FFD600';
+                $scoreRgb = '255, 214, 0';
+                $scoreText = __('Moderate', __FILE__);
+                $scoreSub = __('Ventilation recommended', __FILE__);
+            } elseif ($score >= 35) {
+                $scoreColor = '#FF9100';
+                $scoreRgb = '255, 145, 0';
+                $scoreText = __('Poor', __FILE__);
+                $scoreSub = __('Consider opening windows', __FILE__);
+            } else {
+                $scoreColor = '#FF1744';
+                $scoreRgb = '255, 23, 68';
+                $scoreText = __('Very Poor', __FILE__);
+                $scoreSub = __('Hazardous indoor air', __FILE__);
+            }
+        } else {
+            $scoreColor = '#64748B';
+            $scoreRgb = '100, 116, 139';
+            $scoreText = __('Measuring...', __FILE__);
+            $scoreSub = __('Gathering sensor data', __FILE__);
+            $score = '--';
+        }
+
+        $ledCmd = $this->getCmd(null, 'sensor_aqm_led');
+        $ledHtml = '';
+        if (is_object($ledCmd)) {
+            $ledVal = strtoupper(trim((string)$ledCmd->execCmd()));
+            $isLedOn = ($ledVal === 'ON' || $ledVal === '1' || $ledVal === 'TRUE');
+            $ledHtml = '<div class="alexa-aqm-led-pill ' . ($isLedOn ? 'on' : 'off') . '" title="' . __('Device Status LED', __FILE__) . '">
+                <i class="fas fa-lightbulb"></i> LED ' . ($isLedOn ? 'ON' : 'OFF') . '
+            </div>';
+        }
+
+        $metrics = array(
+            'sensor_temperature' => array(
+                'label' => __('Temperature', __FILE__),
+                'icon' => 'fas fa-thermometer-half',
+                'icon_color' => '#FF7043',
+                'type' => 'temperature'
+            ),
+            'sensor_humidity' => array(
+                'label' => __('Humidity', __FILE__),
+                'icon' => 'fas fa-tint',
+                'icon_color' => '#00B0FF',
+                'type' => 'humidity'
+            ),
+            'sensor_pm25' => array(
+                'label' => 'PM2.5',
+                'icon' => 'fas fa-smog',
+                'icon_color' => '#AB47BC',
+                'type' => 'pm25'
+            ),
+            'sensor_pm10' => array(
+                'label' => 'PM10',
+                'icon' => 'fas fa-wind',
+                'icon_color' => '#7E57C2',
+                'type' => 'pm10'
+            ),
+            'sensor_voc' => array(
+                'label' => __('VOC', __FILE__),
+                'icon' => 'fas fa-leaf',
+                'icon_color' => '#66BB6A',
+                'type' => 'voc'
+            ),
+            'sensor_co' => array(
+                'label' => __('Carbon Monoxide (CO)', __FILE__),
+                'icon' => 'fas fa-shield-alt',
+                'icon_color' => '#FFA726',
+                'type' => 'co'
+            ),
+        );
+
+        $cardsHtml = '';
+        foreach ($metrics as $cmdId => $cfg) {
+            $cmd = $this->getCmd(null, $cmdId);
+            if (!is_object($cmd)) {
+                continue;
+            }
+            $rawVal = $cmd->execCmd();
+            if ($rawVal === '' || $rawVal === null) {
+                continue;
+            }
+
+            $unit = trim((string)$cmd->getUnite());
+            if (stripos($unit, 'MicroGrams') !== false || stripos($unit, 'ug/m3') !== false) {
+                $unit = 'µg/m³';
+            }
+
+            $evalText = '';
+            $evalColor = '#00E676';
+            $displayVal = $rawVal;
+
+            if (is_numeric($rawVal)) {
+                $numVal = floatval($rawVal);
+                switch ($cfg['type']) {
+                    case 'temperature':
+                        $displayVal = number_format($numVal, 1, '.', '');
+                        if ($numVal >= 19 && $numVal <= 24) {
+                            $evalText = __('Optimal', __FILE__);
+                            $evalColor = '#00E676';
+                        } elseif ($numVal >= 17 && $numVal <= 26) {
+                            $evalText = __('Moderate', __FILE__);
+                            $evalColor = '#FFD600';
+                        } else {
+                            $evalText = ($numVal < 17) ? __('Cool', __FILE__) : __('Warm', __FILE__);
+                            $evalColor = '#FF9100';
+                        }
+                        break;
+                    case 'humidity':
+                        $displayVal = round($numVal);
+                        if ($numVal >= 40 && $numVal <= 60) {
+                            $evalText = __('Ideal', __FILE__);
+                            $evalColor = '#00E676';
+                        } elseif ($numVal >= 30 && $numVal <= 70) {
+                            $evalText = __('Acceptable', __FILE__);
+                            $evalColor = '#FFD600';
+                        } else {
+                            $evalText = ($numVal < 30) ? __('Dry', __FILE__) : __('Humid', __FILE__);
+                            $evalColor = '#FF9100';
+                        }
+                        break;
+                    case 'pm25':
+                        $displayVal = round($numVal);
+                        if ($numVal <= 15) {
+                            $evalText = __('Low (<15)', __FILE__);
+                            $evalColor = '#00E676';
+                        } elseif ($numVal <= 35) {
+                            $evalText = __('Moderate', __FILE__);
+                            $evalColor = '#FFD600';
+                        } else {
+                            $evalText = __('Elevated', __FILE__);
+                            $evalColor = '#FF1744';
+                        }
+                        break;
+                    case 'pm10':
+                        $displayVal = round($numVal);
+                        if ($numVal <= 45) {
+                            $evalText = __('Low (<45)', __FILE__);
+                            $evalColor = '#00E676';
+                        } elseif ($numVal <= 75) {
+                            $evalText = __('Moderate', __FILE__);
+                            $evalColor = '#FFD600';
+                        } else {
+                            $evalText = __('Elevated', __FILE__);
+                            $evalColor = '#FF1744';
+                        }
+                        break;
+                    case 'voc':
+                        $displayVal = round($numVal);
+                        if ($numVal <= 220) {
+                            $evalText = __('Low (<220)', __FILE__);
+                            $evalColor = '#00E676';
+                        } elseif ($numVal <= 660) {
+                            $evalText = __('Moderate', __FILE__);
+                            $evalColor = '#FFD600';
+                        } else {
+                            $evalText = __('Elevated', __FILE__);
+                            $evalColor = '#FF1744';
+                        }
+                        break;
+                    case 'co':
+                        $displayVal = round($numVal);
+                        if ($numVal <= 4) {
+                            $evalText = __('Safe (<5)', __FILE__);
+                            $evalColor = '#00E676';
+                        } elseif ($numVal <= 9) {
+                            $evalText = __('Attention', __FILE__);
+                            $evalColor = '#FFD600';
+                        } else {
+                            $evalText = __('Hazardous', __FILE__);
+                            $evalColor = '#FF1744';
+                        }
+                        break;
+                }
+            }
+
+            $cardsHtml .= '
+            <div class="alexa-aqm-metric-card" title="' . htmlspecialchars($cmd->getName()) . '">
+                <div class="alexa-aqm-metric-header">
+                    <i class="' . $cfg['icon'] . '" style="color: ' . $cfg['icon_color'] . ';"></i>
+                    <span class="alexa-aqm-metric-title">' . htmlspecialchars($cfg['label']) . '</span>
+                </div>
+                <div class="alexa-aqm-metric-val-row">
+                    <span class="alexa-aqm-metric-val">' . htmlspecialchars((string)$displayVal) . '</span>
+                    ' . ($unit !== '' ? '<span class="alexa-aqm-metric-unit">' . htmlspecialchars($unit) . '</span>' : '') . '
+                </div>
+                ' . ($evalText !== '' ? '
+                <div class="alexa-aqm-metric-eval" style="color: ' . $evalColor . ';">
+                    <span class="alexa-aqm-eval-dot" style="background-color: ' . $evalColor . ';"></span>
+                    <span>' . htmlspecialchars($evalText) . '</span>
+                </div>' : '') . '
+            </div>';
+        }
+
+        $extraPills = '';
+        foreach ($this->getCmd('info') as $cmd) {
+            $lid = $cmd->getLogicalId();
+            if (strpos($lid, 'sensor_') !== 0) continue;
+            if (in_array($lid, array('sensor_air_quality', 'sensor_indoor_air_quality', 'sensor_temperature',
+                                     'sensor_humidity', 'sensor_pm25', 'sensor_pm10', 'sensor_voc',
+                                     'sensor_co', 'sensor_aqm_led', 'sensor_reachability'), true)) {
+                continue;
+            }
+            $v = $cmd->execCmd();
+            if ($v === '' || $v === null) continue;
+            $u = trim((string)$cmd->getUnite());
+            $extraPills .= '<span class="alexa-aqm-extra-pill" title="' . htmlspecialchars($cmd->getName()) . '">
+                ' . htmlspecialchars($cmd->getName()) . ': <b>' . htmlspecialchars((string)$v) . ($u !== '' ? ' ' . $u : '') . '</b>
+            </span>';
+        }
+
+        $fillWidth = is_numeric($score) ? min(100, max(5, intval($score))) : 0;
+        $statusBadge = $isOnline
+            ? '<span class="alexa-badge-status online"><i class="fas fa-wifi"></i> ' . __('Online', __FILE__) . '</span>'
+            : '<span class="alexa-badge-status offline"><i class="fas fa-times-circle"></i> ' . __('Offline', __FILE__) . '</span>';
+
+        return '
+        <div class="alexa-aqm-container" style="--aqm-color: ' . $scoreColor . '; --aqm-color-rgb: ' . $scoreRgb . ';">
+            <div class="alexa-aqm-top-bar">
+                <div class="alexa-aqm-status-wrap">' . $statusBadge . '</div>
+                ' . $ledHtml . '
+            </div>
+
+            <!-- HERO SCORE -->
+            <div class="alexa-aqm-hero">
+                <div class="alexa-aqm-hero-circle">
+                    <span class="alexa-aqm-hero-num">' . $score . '</span>
+                    <span class="alexa-aqm-hero-denom">/100</span>
+                </div>
+                <div class="alexa-aqm-hero-text">
+                    <div class="alexa-aqm-hero-label">' . __('Air Quality Index', __FILE__) . '</div>
+                    <div class="alexa-aqm-hero-badge">
+                        <span class="alexa-aqm-hero-dot"></span>
+                        ' . $scoreText . '
+                    </div>
+                    <div class="alexa-aqm-hero-desc">' . $scoreSub . '</div>
+                </div>
+            </div>
+
+            <!-- QUALITY PROGRESS BAR -->
+            <div class="alexa-aqm-gauge-track">
+                <div class="alexa-aqm-gauge-fill" style="width: ' . $fillWidth . '%;"></div>
+            </div>
+
+            <!-- METRIC CARDS GRID -->
+            <div class="alexa-aqm-grid">
+                ' . $cardsHtml . '
+            </div>
+
+            ' . ($extraPills !== '' ? '<div class="alexa-aqm-extra-row">' . $extraPills . '</div>' : '') . '
+        </div>';
+    }
+
     public function toHtml($_version = 'dashboard') {
         $replace = $this->preToHtml($_version);
         if (!is_array($replace)) {
@@ -469,137 +814,259 @@ class alexa_devices extends eqLogic {
         $status = $this->getCmd(null, 'status');
         $isOnline = (is_object($status) && $status->execCmd() == 1);
         $replace['#status_display#'] = $isOnline
-            ? '<span class="label label-success" style="font-size:10px;"><i class="fas fa-wifi"></i> ' . __('Online', __FILE__) . '</span>'
-            : '<span class="label label-danger" style="font-size:10px;"><i class="fas fa-times-circle"></i> ' . __('Offline', __FILE__) . '</span>';
+            ? '<span class="alexa-badge-status online"><i class="fas fa-wifi"></i> ' . __('Online', __FILE__) . '</span>'
+            : '<span class="alexa-badge-status offline"><i class="fas fa-times-circle"></i> ' . __('Offline', __FILE__) . '</span>';
 
-        $dnd = $this->getCmd(null, 'dnd_status');
-        $isDnd = (is_object($dnd) && $dnd->execCmd() == 1);
-        $replace['#dnd_display#'] = $isDnd
-            ? '<span class="label label-warning" style="font-size:10px;"><i class="fas fa-moon"></i> DND</span>'
-            : '';
+        $isAqm = $this->isAirQualityMonitor();
+        $replace['#is_aqm#'] = $isAqm ? '1' : '0';
 
-        $vol = $this->getCmd(null, 'volume');
-        $replace['#volume#'] = is_object($vol) ? intval($vol->execCmd()) : 50;
+        if ($isAqm) {
+            // Limpiar comandos multimedia si existían por error en la base de datos
+            $unwanted = array('volume', 'media_state', 'dnd_status', 'last_command', 'speak', 'whisper',
+                              'announcement', 'text_command', 'set_volume', 'play', 'pause', 'stop',
+                              'next', 'previous', 'dnd_on', 'dnd_off', 'restart', 'sound', 'music',
+                              'info_skill', 'routine', 'routine_select');
+            foreach ($unwanted as $uId) {
+                $c = $this->getCmd(null, $uId);
+                if (is_object($c)) {
+                    try { $c->remove(); } catch (Exception $e) {}
+                }
+            }
 
-        $set_vol = $this->getCmd(null, 'set_volume');
-        $replace['#set_volume_id#'] = is_object($set_vol) ? $set_vol->getId() : '';
+            // Corregir unidades de microgramos en comandos existentes
+            foreach (array('sensor_pm25', 'sensor_pm10') as $pmKey) {
+                $pmCmd = $this->getCmd(null, $pmKey);
+                if (is_object($pmCmd) && stripos($pmCmd->getUnite(), 'MicroGrams') !== false) {
+                    $pmCmd->setUnite('µg/m³');
+                    $pmCmd->save();
+                }
+            }
 
-        $media = $this->getCmd(null, 'media_state');
-        $mState = is_object($media) ? $media->execCmd() : '';
-        $replace['#media_state#'] = !empty($mState) ? htmlspecialchars($mState) : __('Idle', __FILE__);
+            $replace['#header_row#'] = '';
+            $replace['#dnd_display#'] = '';
+            $replace['#media_section#'] = '';
+            $replace['#volume_section#'] = '';
+            $replace['#last_command_section#'] = '';
+            $replace['#quick_actions_section#'] = '';
+            $replace['#sensors_display#'] = '';
+            $replace['#aqm_display#'] = $this->buildAqmWidgetHtml($isOnline);
+        } else {
+            $replace['#aqm_display#'] = '';
 
-        $last = $this->getCmd(null, 'last_command');
-        $lastVal = is_object($last) ? $last->execCmd() : '';
-        $replace['#last_command#'] = !empty($lastVal) ? htmlspecialchars($lastVal) : __('No recent commands', __FILE__);
+            $dnd = $this->getCmd(null, 'dnd_status');
+            $isDnd = (is_object($dnd) && $dnd->execCmd() == 1);
+            $replace['#dnd_display#'] = $isDnd
+                ? '<span class="label label-warning" style="font-size:10px;"><i class="fas fa-moon"></i> DND</span>'
+                : '';
 
-        $actionCmds = array('play', 'pause', 'stop', 'next', 'previous', 'text_command', 'speak');
-        foreach ($actionCmds as $c) {
-            $cmdObj = $this->getCmd(null, $c);
-            $replace['#' . $c . '_id#'] = is_object($cmdObj) ? $cmdObj->getId() : '';
-        }
+            $replace['#header_row#'] = '
+            <div class="alexa-header-row">
+                <div class="alexa-status-badge">' . $replace['#status_display#'] . '</div>
+                <div class="alexa-dnd-toggle">' . $replace['#dnd_display#'] . '</div>
+            </div>';
 
-        $placeholders = array(
-            'speak' => __('Text to speak (SSML supported)...', __FILE__),
-            'whisper' => __('Text to whisper...', __FILE__),
-            'announcement' => __('Announcement text...', __FILE__),
-            'text_command' => __('Voice command (e.g. turn on kitchen light)...', __FILE__),
-            'sound' => __('Sound ID (e.g. amzn_sfx_doorbell_chime_01)...', __FILE__),
-            'info_skill' => __('weather, traffic, joke, time, calendar_today...', __FILE__),
-            'music' => __('Song, artist or playlist...', __FILE__),
-            'routine' => __('Exact Alexa routine name...', __FILE__),
-            'set_volume' => __('0 - 100', __FILE__),
-        );
-        $soundOptions = array(
-            array('label' => __('Doorbell', __FILE__), 'value' => 'amzn_sfx_doorbell_chime_01'),
-            array('label' => __('Doorbell 2', __FILE__), 'value' => 'amzn_sfx_doorbell_chime_02'),
-            array('label' => __('Bell', __FILE__), 'value' => 'bell_02'),
-            array('label' => __('Church Bell', __FILE__), 'value' => 'amzn_sfx_church_bell_1x_02'),
-            array('label' => __('Siren', __FILE__), 'value' => 'amzn_sfx_siren_01'),
-            array('label' => __('Sci-Fi Alarm', __FILE__), 'value' => 'amzn_sfx_scifi_alarm_01'),
-            array('label' => __('Dog Bark', __FILE__), 'value' => 'amzn_sfx_dog_bark_02'),
-            array('label' => __('Cat Meow', __FILE__), 'value' => 'amzn_sfx_cat_meow_01'),
-            array('label' => __('Applause', __FILE__), 'value' => 'amzn_sfx_crowd_applause_01'),
-            array('label' => __('Christmas', __FILE__), 'value' => 'christmas_01'),
-        );
-        $skillOptions = array(
-            array('label' => 'weather', 'value' => 'weather'),
-            array('label' => 'traffic', 'value' => 'traffic'),
-            array('label' => 'flash_briefing', 'value' => 'flash_briefing'),
-            array('label' => 'time', 'value' => 'time'),
-            array('label' => 'date', 'value' => 'date'),
-            array('label' => 'calendar_today', 'value' => 'calendar_today'),
-            array('label' => 'calendar_tomorrow', 'value' => 'calendar_tomorrow'),
-            array('label' => 'calendar_next', 'value' => 'calendar_next'),
-            array('label' => 'joke', 'value' => 'joke'),
-            array('label' => 'fun_fact', 'value' => 'fun_fact'),
-            array('label' => 'tell_story', 'value' => 'tell_story'),
-            array('label' => 'sing_song', 'value' => 'sing_song'),
-            array('label' => 'good_morning', 'value' => 'good_morning'),
-            array('label' => 'goodnight', 'value' => 'goodnight'),
-            array('label' => 'im_home', 'value' => 'im_home'),
-            array('label' => 'clean_up', 'value' => 'clean_up'),
-            array('label' => 'national_news', 'value' => 'national_news'),
-        );
+            // Media Player
+            if ($this->supportsMediaPlayer()) {
+                $media = $this->getCmd(null, 'media_state');
+                $mState = is_object($media) ? $media->execCmd() : '';
+                $replace['#media_state#'] = !empty($mState) ? htmlspecialchars($mState) : __('Idle', __FILE__);
+                $actionCmds = array('play', 'pause', 'stop', 'next', 'previous');
+                foreach ($actionCmds as $c) {
+                    $cmdObj = $this->getCmd(null, $c);
+                    $replace['#' . $c . '_id#'] = is_object($cmdObj) ? $cmdObj->getId() : '';
+                }
+                $replace['#media_section#'] = '
+                <div class="alexa-media-section">
+                    <div class="alexa-media-info">
+                        <i class="fas fa-music alexa-music-icon"></i>
+                        <span class="alexa-media-state">' . $replace['#media_state#'] . '</span>
+                    </div>
+                    <div class="alexa-media-controls">
+                        <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-alexa" data-cmd_id="' . $replace['#previous_id#'] . '" title="' . __('Previous', __FILE__) . '">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button type="button" class="btn btn-primary btn-circle cmd-btn-alexa" data-cmd_id="' . $replace['#play_id#'] . '" title="' . __('Play', __FILE__) . '">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button type="button" class="btn btn-default btn-circle cmd-btn-alexa" data-cmd_id="' . $replace['#pause_id#'] . '" title="' . __('Pause', __FILE__) . '">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                        <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-alexa" data-cmd_id="' . $replace['#stop_id#'] . '" title="' . __('Stop', __FILE__) . '">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                        <button type="button" class="btn btn-default btn-circle btn-sm cmd-btn-alexa" data-cmd_id="' . $replace['#next_id#'] . '" title="' . __('Next', __FILE__) . '">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                    </div>
+                </div>';
+            } else {
+                $replace['#media_section#'] = '';
+            }
 
-        $cmdOptionsHtml = '';
-        $allActions = $this->getCmd('action');
-        if (is_array($allActions)) {
-            foreach ($allActions as $actCmd) {
-                $lid = $actCmd->getLogicalId();
-                $sub = $actCmd->getSubType();
-                $ph = isset($placeholders[$lid]) ? $placeholders[$lid] : __('Parameter...', __FILE__);
-                $selected = ($lid === 'speak') ? ' selected' : '';
-                $optsJson = '';
-                if ($lid === 'sound') {
-                    $optsJson = json_encode($soundOptions, JSON_UNESCAPED_UNICODE);
-                } elseif ($lid === 'info_skill') {
-                    $optsJson = json_encode($skillOptions, JSON_UNESCAPED_UNICODE);
-                } elseif ($lid === 'routine_select' || $lid === 'routine') {
-                    $listVal = $actCmd->getConfiguration('listValue', '');
-                    if (!empty($listVal)) {
-                        $rOpts = array();
-                        foreach (explode(';', $listVal) as $pair) {
-                            $parts = explode('|', $pair, 2);
-                            if (count($parts) === 2 && $parts[0] !== '') {
-                                $rOpts[] = array('label' => $parts[1], 'value' => $parts[0]);
+            // Volume
+            if ($this->supportsVolume()) {
+                $vol = $this->getCmd(null, 'volume');
+                $replace['#volume#'] = is_object($vol) ? intval($vol->execCmd()) : 50;
+                $set_vol = $this->getCmd(null, 'set_volume');
+                $replace['#set_volume_id#'] = is_object($set_vol) ? $set_vol->getId() : '';
+                $replace['#volume_section#'] = '
+                <div class="alexa-volume-row">
+                    <i class="fas fa-volume-down alexa-vol-icon"></i>
+                    <input type="range" class="alexa-vol-slider" min="0" max="100" value="' . $replace['#volume#'] . '" data-cmd_id="' . $replace['#set_volume_id#'] . '" />
+                    <i class="fas fa-volume-up alexa-vol-icon"></i>
+                    <span class="alexa-vol-val">' . $replace['#volume#'] . '%</span>
+                </div>';
+            } else {
+                $replace['#volume_section#'] = '';
+            }
+
+            // Last voice command
+            $last = $this->getCmd(null, 'last_command');
+            $lastVal = is_object($last) ? $last->execCmd() : '';
+            if ($this->supportsVoiceControl() && !empty($lastVal)) {
+                $replace['#last_command#'] = htmlspecialchars($lastVal);
+                $replace['#last_command_section#'] = '
+                <div class="alexa-last-cmd-bubble" title="' . __('Last command heard by Alexa', __FILE__) . '">
+                    <i class="fas fa-comment-dots" style="color: #00CAFA; margin-right: 4px;"></i>
+                    <span class="alexa-last-cmd-text">' . $replace['#last_command#'] . '</span>
+                </div>';
+            } else {
+                $replace['#last_command_section#'] = '';
+            }
+
+            // Quick Actions / TTS
+            $cmdOptionsHtml = '';
+            if ($this->supportsActions()) {
+                $placeholders = array(
+                    'speak' => __('Text to speak (SSML supported)...', __FILE__),
+                    'whisper' => __('Text to whisper...', __FILE__),
+                    'announcement' => __('Announcement text...', __FILE__),
+                    'text_command' => __('Voice command (e.g. turn on kitchen light)...', __FILE__),
+                    'sound' => __('Sound ID (e.g. amzn_sfx_doorbell_chime_01)...', __FILE__),
+                    'info_skill' => __('weather, traffic, joke, time, calendar_today...', __FILE__),
+                    'music' => __('Song, artist or playlist...', __FILE__),
+                    'routine' => __('Exact Alexa routine name...', __FILE__),
+                    'set_volume' => __('0 - 100', __FILE__),
+                );
+                $soundOptions = array(
+                    array('label' => __('Doorbell', __FILE__), 'value' => 'amzn_sfx_doorbell_chime_01'),
+                    array('label' => __('Doorbell 2', __FILE__), 'value' => 'amzn_sfx_doorbell_chime_02'),
+                    array('label' => __('Bell', __FILE__), 'value' => 'bell_02'),
+                    array('label' => __('Church Bell', __FILE__), 'value' => 'amzn_sfx_church_bell_1x_02'),
+                    array('label' => __('Siren', __FILE__), 'value' => 'amzn_sfx_siren_01'),
+                    array('label' => __('Sci-Fi Alarm', __FILE__), 'value' => 'amzn_sfx_scifi_alarm_01'),
+                    array('label' => __('Dog Bark', __FILE__), 'value' => 'amzn_sfx_dog_bark_02'),
+                    array('label' => __('Cat Meow', __FILE__), 'value' => 'amzn_sfx_cat_meow_01'),
+                    array('label' => __('Applause', __FILE__), 'value' => 'amzn_sfx_crowd_applause_01'),
+                    array('label' => __('Christmas', __FILE__), 'value' => 'christmas_01'),
+                );
+                $skillOptions = array(
+                    array('label' => 'weather', 'value' => 'weather'),
+                    array('label' => 'traffic', 'value' => 'traffic'),
+                    array('label' => 'flash_briefing', 'value' => 'flash_briefing'),
+                    array('label' => 'time', 'value' => 'time'),
+                    array('label' => 'date', 'value' => 'date'),
+                    array('label' => 'calendar_today', 'value' => 'calendar_today'),
+                    array('label' => 'calendar_tomorrow', 'value' => 'calendar_tomorrow'),
+                    array('label' => 'calendar_next', 'value' => 'calendar_next'),
+                    array('label' => 'joke', 'value' => 'joke'),
+                    array('label' => 'fun_fact', 'value' => 'fun_fact'),
+                    array('label' => 'tell_story', 'value' => 'tell_story'),
+                    array('label' => 'sing_song', 'value' => 'sing_song'),
+                    array('label' => 'good_morning', 'value' => 'good_morning'),
+                    array('label' => 'goodnight', 'value' => 'goodnight'),
+                    array('label' => 'im_home', 'value' => 'im_home'),
+                    array('label' => 'clean_up', 'value' => 'clean_up'),
+                    array('label' => 'national_news', 'value' => 'national_news'),
+                );
+
+                $allActions = $this->getCmd('action');
+                if (is_array($allActions)) {
+                    foreach ($allActions as $actCmd) {
+                        $lid = $actCmd->getLogicalId();
+                        $sub = $actCmd->getSubType();
+                        $ph = isset($placeholders[$lid]) ? $placeholders[$lid] : __('Parameter...', __FILE__);
+                        $selected = ($lid === 'speak') ? ' selected' : '';
+                        $optsJson = '';
+                        if ($lid === 'sound') {
+                            $optsJson = json_encode($soundOptions, JSON_UNESCAPED_UNICODE);
+                        } elseif ($lid === 'info_skill') {
+                            $optsJson = json_encode($skillOptions, JSON_UNESCAPED_UNICODE);
+                        } elseif ($lid === 'routine_select' || $lid === 'routine') {
+                            $listVal = $actCmd->getConfiguration('listValue', '');
+                            if (!empty($listVal)) {
+                                $rOpts = array();
+                                foreach (explode(';', $listVal) as $pair) {
+                                    $parts = explode('|', $pair, 2);
+                                    if (count($parts) === 2 && $parts[0] !== '') {
+                                        $rOpts[] = array('label' => $parts[1], 'value' => $parts[0]);
+                                    }
+                                }
+                                if (!empty($rOpts)) {
+                                    $optsJson = json_encode($rOpts, JSON_UNESCAPED_UNICODE);
+                                }
                             }
                         }
-                        if (!empty($rOpts)) {
-                            $optsJson = json_encode($rOpts, JSON_UNESCAPED_UNICODE);
-                        }
+                        $optsAttr = $optsJson !== '' ? ' data-options="' . htmlspecialchars($optsJson, ENT_QUOTES, 'UTF-8') . '"' : '';
+                        $cmdOptionsHtml .= '<option value="' . intval($actCmd->getId()) . '" data-subtype="' . htmlspecialchars($sub) . '" data-logical_id="' . htmlspecialchars($lid) . '" data-placeholder="' . htmlspecialchars($ph) . '"' . $optsAttr . $selected . '>' . htmlspecialchars($actCmd->getName()) . '</option>';
                     }
                 }
-                $optsAttr = $optsJson !== '' ? ' data-options="' . htmlspecialchars($optsJson, ENT_QUOTES, 'UTF-8') . '"' : '';
-                $cmdOptionsHtml .= '<option value="' . intval($actCmd->getId()) . '" data-subtype="' . htmlspecialchars($sub) . '" data-logical_id="' . htmlspecialchars($lid) . '" data-placeholder="' . htmlspecialchars($ph) . '"' . $optsAttr . $selected . '>' . htmlspecialchars($actCmd->getName()) . '</option>';
             }
-        }
-        $replace['#cmd_options#'] = $cmdOptionsHtml;
 
-        $sensorsHtml = '';
-        $allInfos = $this->getCmd('info');
-        if (is_array($allInfos)) {
+            if (!empty($cmdOptionsHtml)) {
+                $volVal = isset($replace['#volume#']) ? $replace['#volume#'] : 50;
+                $replace['#quick_actions_section#'] = '
+                <div class="alexa-quick-action-row">
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <select class="form-control input-sm alexa-widget-cmd-select" style="flex: 1;" title="' . __('Select command', __FILE__) . '">
+                            ' . $cmdOptionsHtml . '
+                        </select>
+                        <a href="' . $replace['#eqLogic_href#'] . '" class="btn btn-xs btn-default alexa-btn-help-link reportModeHidden" title="' . __('Command help & configuration', __FILE__) . '">
+                            <i class="fas fa-question-circle"></i>
+                        </a>
+                    </div>
+                    <div class="input-group input-group-sm" style="margin-top: 4px;">
+                        <input type="text" class="form-control alexa-input-text" placeholder="' . __('Text to speak (SSML supported)...', __FILE__) . '" />
+                        <select class="form-control alexa-input-select" style="display: none;"></select>
+                        <input type="number" class="form-control alexa-input-slider" min="0" max="100" value="' . $volVal . '" style="display: none;" />
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-info alexa-btn-run-selected" title="' . __('Execute command', __FILE__) . '">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>';
+            } else {
+                $replace['#quick_actions_section#'] = '';
+            }
+
+            // Echo Sensors
             $sensorPills = '';
-            foreach ($allInfos as $infoCmd) {
-                $lid = $infoCmd->getLogicalId();
-                if (strpos($lid, 'sensor_') !== 0) {
-                    continue;
+            $allInfos = $this->getCmd('info');
+            if (is_array($allInfos)) {
+                foreach ($allInfos as $infoCmd) {
+                    $lid = $infoCmd->getLogicalId();
+                    if (strpos($lid, 'sensor_') !== 0) continue;
+                    if ($lid === 'sensor_reachability') continue;
+                    $val = $infoCmd->execCmd();
+                    if ($val === '' || $val === null) continue;
+                    $unit = trim((string)$infoCmd->getUnite());
+                    if (stripos($unit, 'MicroGrams') !== false) $unit = 'µg/m³';
+                    $icon = 'fas fa-info-circle';
+                    if (strpos($lid, 'temp') !== false) $icon = 'fas fa-thermometer-half';
+                    elseif (strpos($lid, 'hum') !== false) $icon = 'fas fa-tint';
+                    elseif (strpos($lid, 'pres') !== false || strpos($lid, 'motion') !== false) $icon = 'fas fa-running';
+                    elseif (strpos($lid, 'light') !== false || strpos($lid, 'illum') !== false) $icon = 'fas fa-sun';
+
+                    $displayVal = ($infoCmd->getSubType() === 'binary')
+                        ? ($val ? __('Detected', __FILE__) : __('Clear', __FILE__))
+                        : (is_numeric($val) ? round($val, 1) : htmlspecialchars((string)$val)) . ($unit !== '' ? ' ' . htmlspecialchars($unit) : '');
+                    $sensorPills .= '<span class="alexa-sensor-pill" title="' . htmlspecialchars($infoCmd->getName()) . '"><i class="' . $icon . '"></i> '
+                        . htmlspecialchars($infoCmd->getName()) . ': <b>' . $displayVal . '</b></span>';
                 }
-                $val = $infoCmd->execCmd();
-                if ($val === '' || $val === null) {
-                    continue;
-                }
-                $unit = trim((string)$infoCmd->getUnite());
-                $displayVal = ($infoCmd->getSubType() === 'binary')
-                    ? ($val ? __('Detected', __FILE__) : __('Clear', __FILE__))
-                    : htmlspecialchars((string)$val) . ($unit !== '' ? ' ' . htmlspecialchars($unit) : '');
-                $sensorPills .= '<span class="label label-info" style="font-size:10px;padding:2px 5px;" title="' . htmlspecialchars($infoCmd->getName()) . '">'
-                    . htmlspecialchars($infoCmd->getName()) . ': ' . $displayVal . '</span>';
             }
-            if ($sensorPills !== '') {
-                $sensorsHtml = '<div class="alexa-sensors-row" style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0;">' . $sensorPills . '</div>';
-            }
+            $replace['#sensors_display#'] = ($sensorPills !== '') ? '<div class="alexa-sensors-row">' . $sensorPills . '</div>' : '';
         }
-        $replace['#sensors_display#'] = $sensorsHtml;
 
         $template = translate::exec(
             getTemplate('core', $version, 'alexa_devices', 'alexa_devices'),
@@ -609,8 +1076,32 @@ class alexa_devices extends eqLogic {
     }
 
     public function createDefaultCommands($device = null) {
+        $isAqm = $this->isAirQualityMonitor();
+        if ($device !== null) {
+            $cat = isset($device['primary_display_category']) ? strtoupper((string)$device['primary_display_category']) : '';
+            $fam = isset($device['device_family']) ? strtoupper((string)$device['device_family']) : '';
+            if (strpos($cat, 'AIR_QUALITY') !== false || strpos($fam, 'AIR_QUALITY') !== false) {
+                $isAqm = true;
+            }
+        }
+
         // 1. Info: Online Status
         $this->getOrCreateCmd('status', 'info', 'binary', __('Online Status', __FILE__), false);
+
+        // Si es un monitor de calidad del aire, no creamos comandos multimedia/audio
+        if ($isAqm) {
+            $unwanted = array('volume', 'media_state', 'dnd_status', 'last_command', 'speak', 'whisper',
+                              'announcement', 'text_command', 'set_volume', 'play', 'pause', 'stop',
+                              'next', 'previous', 'dnd_on', 'dnd_off', 'restart', 'sound', 'music',
+                              'info_skill', 'routine', 'routine_select');
+            foreach ($unwanted as $uId) {
+                $c = $this->getCmd(null, $uId);
+                if (is_object($c)) {
+                    try { $c->remove(); } catch (Exception $e) {}
+                }
+            }
+            return;
+        }
 
         // 2. Info: Current Volume
         $this->getOrCreateCmd('volume', 'info', 'numeric', __('Current Volume', __FILE__), false, '#slider#');
@@ -776,13 +1267,23 @@ class alexa_devices extends eqLogic {
                 $val = (string)$rawVal;
             }
 
+            $unit = $scale !== '' ? $scale : ($meta ? $meta['unit'] : '');
+            if ($unit === 'CELSIUS' || $unit === 'C') $unit = '°C';
+            if ($unit === 'FAHRENHEIT' || $unit === 'F') $unit = '°F';
+            if ($unit === 'PERCENT') $unit = '%';
+            if (strcasecmp($unit, 'MicroGramsPerCubicMeter') === 0 || strcasecmp($unit, 'MICROGRAMS_PER_CUBIC_METER') === 0 || strcasecmp($unit, 'ug/m3') === 0) {
+                $unit = 'µg/m³';
+            }
+            if (strcasecmp($unit, 'PartsPerMillion') === 0 || strcasecmp($unit, 'PPM') === 0) {
+                $unit = 'ppm';
+            }
+            if (strcasecmp($unit, 'PartsPerBillion') === 0 || strcasecmp($unit, 'PPB') === 0) {
+                $unit = 'ppb';
+            }
+
             $cmd = $this->getCmd(null, $logicalId);
             if (!is_object($cmd)) {
                 $cmd = $this->getOrCreateCmd($logicalId, 'info', $subType, $label, true);
-                $unit = $scale !== '' ? $scale : ($meta ? $meta['unit'] : '');
-                if ($unit === 'CELSIUS' || $unit === 'C') $unit = '°C';
-                if ($unit === 'FAHRENHEIT' || $unit === 'F') $unit = '°F';
-                if ($unit === 'PERCENT') $unit = '%';
                 if ($unit !== '') {
                     $cmd->setUnite($unit);
                 }
@@ -790,6 +1291,15 @@ class alexa_devices extends eqLogic {
                     $cmd->setGeneric_type($meta['generic']);
                 }
                 $cmd->save();
+            } else {
+                $currentUnit = $cmd->getUnite();
+                if (stripos($currentUnit, 'MicroGrams') !== false || stripos($currentUnit, 'ug/m3') !== false) {
+                    $cmd->setUnite('µg/m³');
+                    $cmd->save();
+                } elseif (empty($currentUnit) && !empty($unit)) {
+                    $cmd->setUnite($unit);
+                    $cmd->save();
+                }
             }
             $this->checkAndUpdateCmd($logicalId, $val);
         }
