@@ -546,6 +546,23 @@
                 syncAlexaWidgetCmdInput();
             });
 
+            // Botón de refresco con animación de giro
+            $widget.find('.cmd.refresh').off('click').on('click', function() {
+                var $icon = $(this).find('i');
+                $icon.addClass('fa-spin');
+                if ('#refresh_id#') {
+                    jeedom.cmd.execute({
+                        id: '#refresh_id#',
+                        success: function() {
+                            setTimeout(function() { $icon.removeClass('fa-spin'); }, 800);
+                        },
+                        error: function() {
+                            $icon.removeClass('fa-spin');
+                        }
+                    });
+                }
+            });
+
             // Manejador de botones multimedia
             $widget.find('.cmd-btn-alexa').off('click').on('click', function() {
                 var cmdId = $(this).attr('data-cmd_id');
