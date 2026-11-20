@@ -157,13 +157,21 @@
 
         /* ACCIONES RÁPIDAS */
         .alexa-quick-action-row .alexa-widget-cmd-select {
-            background: rgba(255, 255, 255, 0.12) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300CAFA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 8px center !important;
+            background-size: 12px 12px !important;
+            border: 1px solid rgba(255, 255, 255, 0.18) !important;
             color: #FFF !important;
             border-radius: 4px !important;
             font-size: 11px !important;
             height: 26px !important;
-            padding: 2px 6px !important;
+            padding: 2px 24px 2px 8px !important;
+            cursor: pointer;
         }
         .alexa-quick-action-row .alexa-widget-cmd-select option {
             background: #1b2430;
@@ -183,12 +191,25 @@
             color: #FFF !important;
         }
         .alexa-quick-action-row .form-control.alexa-input-text,
-        .alexa-quick-action-row .form-control.alexa-input-select,
         .alexa-quick-action-row .form-control.alexa-input-slider {
             background: rgba(255, 255, 255, 0.1) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             color: #FFF !important;
             border-radius: 4px 0 0 4px !important;
+        }
+        .alexa-quick-action-row .form-control.alexa-input-select {
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300CAFA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 8px center !important;
+            background-size: 12px 12px !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #FFF !important;
+            border-radius: 4px 0 0 4px !important;
+            padding: 2px 24px 2px 8px !important;
         }
         .alexa-quick-action-row .form-control.alexa-input-select option {
             background: #1b2430;
