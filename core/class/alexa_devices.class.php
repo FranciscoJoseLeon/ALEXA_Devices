@@ -24,7 +24,15 @@ class alexa_devices extends eqLogic {
 
         if (file_exists($pid_file)) {
             $pid = intval(trim(file_get_contents($pid_file)));
-            if ($pid > 0 && posix_kill($pid, 0)) {
+            $isRunning = false;
+            if ($pid > 0) {
+                if (function_exists('posix_kill')) {
+                    $isRunning = @posix_kill($pid, 0);
+                } else {
+                    $isRunning = file_exists('/proc/' . $pid);
+                }
+            }
+            if ($isRunning) {
                 $return['state'] = 'ok';
             } else {
                 try {
@@ -32,10 +40,10 @@ class alexa_devices extends eqLogic {
                     if (isset($health['status']) && $health['status'] == 'ok') {
                         $return['state'] = 'ok';
                     } else {
-                        unlink($pid_file);
+                        @unlink($pid_file);
                     }
                 } catch (Exception $e) {
-                    unlink($pid_file);
+                    @unlink($pid_file);
                 }
             }
         } else {
@@ -135,13 +143,23 @@ class alexa_devices extends eqLogic {
         if (file_exists($pid_file)) {
             $pid = intval(trim(file_get_contents($pid_file)));
             if ($pid > 0) {
-                posix_kill($pid, SIGTERM);
-                sleep(1);
-                if (posix_kill($pid, 0)) {
-                    posix_kill($pid, SIGKILL);
+                $sigterm = defined('SIGTERM') ? SIGTERM : 15;
+                $sigkill = defined('SIGKILL') ? SIGKILL : 9;
+
+                if (function_exists('posix_kill')) {
+                    @posix_kill($pid, $sigterm);
+                    sleep(1);
+                    if (@posix_kill($pid, 0)) {
+                        @posix_kill($pid, $sigkill);
+                    }
+                } elseif (function_exists('exec')) {
+                    $sudo = (class_exists('system') && method_exists('system', 'getCmdSudo')) ? system::getCmdSudo() : 'sudo ';
+                    exec($sudo . 'kill -' . intval($sigterm) . ' ' . $pid . ' 2>/dev/null');
+                    sleep(1);
+                    exec($sudo . 'kill -' . intval($sigkill) . ' ' . $pid . ' 2>/dev/null');
                 }
             }
-            unlink($pid_file);
+            @unlink($pid_file);
         }
 
         // Asegurar que no quede ningún proceso huérfano bloqueando el puerto
