@@ -578,8 +578,10 @@ class alexa_devices extends eqLogic {
         if (is_object($ledCmd)) {
             $ledVal = strtoupper(trim((string)$ledCmd->execCmd()));
             $isLedOn = ($ledVal === 'ON' || $ledVal === '1' || $ledVal === 'TRUE');
-            $ledHtml = '<div class="alexa-aqm-led-pill ' . ($isLedOn ? 'on' : 'off') . '" title="' . __('Device Status LED', __FILE__) . '">
-                <i class="fas fa-lightbulb"></i> LED ' . ($isLedOn ? 'ON' : 'OFF') . '
+            $ledStatusLabel = $isLedOn ? __('Active', __FILE__) : __('Off', __FILE__);
+            $ledTooltip = __('Physical status LED (Configured in Alexa app · Read-only)', __FILE__);
+            $ledHtml = '<div class="alexa-aqm-led-badge ' . ($isLedOn ? 'on' : 'off') . '" title="' . $ledTooltip . '">
+                <i class="fas fa-lightbulb"></i> <span>LED: ' . $ledStatusLabel . '</span>
             </div>';
         }
 
